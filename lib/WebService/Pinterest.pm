@@ -1,5 +1,7 @@
 package WebService::Pinterest;
 
+# ABSTRACT: Pinterest API client
+
 use strict;
 use warnings;
 
