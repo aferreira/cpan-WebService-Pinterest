@@ -1,4 +1,4 @@
-package WWW::Pinterest::API;
+package WebService::Pinterest;
 
 use strict;
 use warnings;
