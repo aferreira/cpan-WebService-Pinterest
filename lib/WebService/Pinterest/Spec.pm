@@ -13,6 +13,8 @@ use List::MoreUtils qw(all);
 
 use namespace::autoclean;
 
+# TODO type=std as default
+
 my @ENDPOINTS = (
     {
         endpoint   => [ GET => '/oauth' ],
@@ -29,11 +31,38 @@ my @ENDPOINTS = (
         endpoint   => [ POST => '/v1/oauth/token' ],
         parameters => {},
     },
+
+    # Users
+    # https://developers.pinterest.com/docs/api/users/#fetch-user-data
     {
         endpoint => [ GET => '/v1/me/' ],
         object   => 'user',
         type     => 'std', # access_token + fields
     },
+    { endpoint => [ GET => '/v1/me/boards/' ],
+            object => 'board',
+            type => 'std',
+    },
+    { endpoint => [ GET => '/v1/me/boards/suggested/' ],
+            object => 'board',
+            type => 'std',
+    },
+    { endpoint => [ GET => '/v1/me/likes/'],
+            object => 'pin',
+            type => 'std',
+            # TODO cursor
+    },
+    { endpoint => [ GET => '/v1/me/pins/'],
+            object => 'pin',
+            type => 'std',
+            # TODO cursor
+    },
+
+    # https://developers.pinterest.com/docs/api/users/#search-user-data
+    # https://developers.pinterest.com/docs/api/users/#create-follow-data
+    # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
+    # https://developers.pinterest.com/docs/api/users/#remove-follow-data
+
     {
         endpoint   => [ GET => '/v1/users/:user' ],
         object     => 'user',
@@ -175,7 +204,7 @@ sub _compile_endpoints {
         my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
 
-        if ( $ep->{type} && $ep->{type} eq 'std' ) {
+        if ($ep->{type} && $ep->{type} eq 'std') {
 
             # add access_token & fields
             my $object = $ep->{object}

@@ -130,19 +130,17 @@ sub authenticate {
     # Get access token
 }
 
-sub fetch_me {
-    my $self = shift;
-    return $self->call( GET => '/v1/me/', query => {@_} );
-}
+sub fetch_me        { shift()->call( GET => '/v1/me/',        query => {@_} ) }
+sub fetch_my_boards { shift()->call( GET => '/v1/me/boards/', query => {@_} ) }
 
-sub fetch_my_boards {
-    my $self = shift;
-    return $self->call( GET => 'me/boards/', query => {@_} );
+sub fetch_my_suggested_boards {
+    shift()->call( GET => '/v1/me/boards/suggested/', query => {@_} );
 }
+sub fetch_my_likes { shift()->call( GET => '/v1/me/likes/', query => {@_} ) }
+sub fetch_my_pins  { shift()->call( GET => '/v1/me/pins/',  query => {@_} ) }
 
 sub fetch_pin {
-    my $self = shift;
-    return $self->call( GET => '/v1/pins/:pin/', query => {@_} );
+    return shift()->call( GET => '/v1/pins/:pin/', query => {@_} );
 }
 
 # $res = $api->fetch($entity, %args);
