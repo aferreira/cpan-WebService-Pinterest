@@ -30,45 +30,37 @@ my @ENDPOINTS = (
         parameters => {},
     },
     {
-        endpoint   => [ GET => '/v1/me/' ],
-        object     => 'user',
-        type       => 'std', # access_token + fields
-        parameters => {
-            access_token => { spec => 'access-token' },
-            fields       => { spec => 'user-fields', optional => 1, },   # FIXME
-        },
+        endpoint => [ GET => '/v1/me/' ],
+        object   => 'user',
+        type     => 'std', # access_token + fields
     },
     {
         endpoint   => [ GET => '/v1/users/:user' ],
+        object     => 'user',
+        type       => 'std',
         parameters => {
-            access_token => { spec => 'access-token' },
-            user         => { spec => 'user-id' },
-            fields       => { spec => 'user-fields', optional => 1, },   # FIXME
+            user => { spec => 'user-id' },
         },
     },
     {
-        endpoint   => [ GET => '/v1/me/boards/' ],
-        object     => 'board',
-        type       => 'std',
-        parameters => {
-            access_token => { spec => 'access-token' },
-        },
+        endpoint => [ GET => '/v1/me/boards/' ],
+        object   => 'board',
+        type     => 'std',
     },
     {
         endpoint   => [ GET => '/v1/boards/:board/' ],
+        object     => 'board',
+        type       => 'std',
         parameters => {
-            access_token => { spec => 'access-token' },
-            board        => { spec => 'board' },
-
+            board => { spec => 'board' },
         },
     },
     {
         endpoint   => [ GET => '/v1/pins/:pin/' ],
+        object     => 'pin',
+        type       => 'std',
         parameters => {
-            access_token => { spec => 'access-token' },
-            pin          => { spec => 'pin-id' },
-
-            #fields
+            pin => { spec => 'pin-id' },
         },
     },
     {
@@ -79,8 +71,7 @@ my @ENDPOINTS = (
             board => { spec => 'board' },
             note  => { spec => 'any', },
             link  => { spec => 'web-uri', optional => 1 },
-            image_url    => { spec => 'web-uri' },        # FIXME other options
-            access_token => { spec => 'access-token' },
+            image_url => { spec => 'web-uri' },    # FIXME other options
         },
     },
 );
@@ -120,6 +111,8 @@ my %PREDICATE_FOR = (
 );
 $PREDICATE_FOR{'pinterest:access-token'} = $PREDICATE_FOR{'any'};
 $PREDICATE_FOR{'pinterest:user-fields'}  = $PREDICATE_FOR{'any'};    # FIXME
+$PREDICATE_FOR{'pinterest:board-fields'} = $PREDICATE_FOR{'any'};    # FIXME
+$PREDICATE_FOR{'pinterest:pin-fields'}   = $PREDICATE_FOR{'any'};    # FIXME
 
 sub _compile_spec {
     my $specs = shift;
@@ -178,9 +171,18 @@ sub _compile_endpoints {
     my $compiled;
     for my $ep (@ENDPOINTS) {
         my $endpoint = $ep->{endpoint};
-        my $params   = $ep->{parameters};
+        my $params   = $ep->{parameters} // {};
         my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
+
+        if ( $ep->{type} && $ep->{type} eq 'std' ) {
+
+            # add access_token & fields
+            my $object = $ep->{object}
+              or die "Error in '$k' endpoint specs: no 'object' where type='std'\n";
+            $params->{access_token} //= { spec => 'access-token' };
+            $params->{fields} //= { spec => "$object-fields", optional => 1 };
+        }
 
         my $path = $endpoint->[1];
         my ( $tpl, $places, $argns ) = _compile_path($path);
@@ -232,7 +234,6 @@ sub validate_endpoint_params {
     my $path;
     if ( $compiled->{path} ) {
         $path = $compiled->{path};
-
     }
     else {
         my ( $tpl, $places, $argns ) =
