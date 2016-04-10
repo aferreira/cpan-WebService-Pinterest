@@ -13,10 +13,9 @@ use List::MoreUtils qw(all);
 
 use namespace::autoclean;
 
-# TODO type=std as default
-
 my @ENDPOINTS = (
     {
+        type       => '',                    # FIXME
         endpoint   => [ GET => '/oauth' ],
         parameters => {
             response_type => { spec => 'response-code' },
@@ -28,6 +27,7 @@ my @ENDPOINTS = (
         },
     },
     {
+        type       => '',                              # FIXME
         endpoint   => [ POST => '/v1/oauth/token' ],
         parameters => {},
     },
@@ -37,25 +37,26 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/' ],
         object   => 'user',
-        type     => 'std', # access_token + fields
     },
-    { endpoint => [ GET => '/v1/me/boards/' ],
-            object => 'board',
-            type => 'std',
+    {
+        endpoint => [ GET => '/v1/me/boards/' ],
+        object   => 'board',
     },
-    { endpoint => [ GET => '/v1/me/boards/suggested/' ],
-            object => 'board',
-            type => 'std',
+    {
+        endpoint => [ GET => '/v1/me/boards/suggested/' ],
+        object   => 'board',
     },
-    { endpoint => [ GET => '/v1/me/likes/'],
-            object => 'pin',
-            type => 'std',
-            # TODO cursor
+    {
+        endpoint => [ GET => '/v1/me/likes/' ],
+        object   => 'pin',
+
+        # TODO cursor
     },
-    { endpoint => [ GET => '/v1/me/pins/'],
-            object => 'pin',
-            type => 'std',
-            # TODO cursor
+    {
+        endpoint => [ GET => '/v1/me/pins/' ],
+        object   => 'pin',
+
+        # TODO cursor
     },
 
     # https://developers.pinterest.com/docs/api/users/#search-user-data
@@ -66,7 +67,6 @@ my @ENDPOINTS = (
     {
         endpoint   => [ GET => '/v1/users/:user' ],
         object     => 'user',
-        type       => 'std',
         parameters => {
             user => { spec => 'user-id' },
         },
@@ -74,12 +74,10 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/boards/' ],
         object   => 'board',
-        type     => 'std',
     },
     {
         endpoint   => [ GET => '/v1/boards/:board/' ],
         object     => 'board',
-        type       => 'std',
         parameters => {
             board => { spec => 'board' },
         },
@@ -87,7 +85,6 @@ my @ENDPOINTS = (
     {
         endpoint   => [ GET => '/v1/pins/:pin/' ],
         object     => 'pin',
-        type       => 'std',
         parameters => {
             pin => { spec => 'pin-id' },
         },
@@ -95,7 +92,6 @@ my @ENDPOINTS = (
     {
         endpoint   => [ POST => '/v1/pins/' ],
         object     => 'pin',
-        type       => 'std',
         parameters => {
             board => { spec => 'board' },
             note  => { spec => 'any', },
@@ -204,11 +200,14 @@ sub _compile_endpoints {
         my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
 
-        if ($ep->{type} && $ep->{type} eq 'std') {
+        $ep->{type} //=
+          'std';    # default endpoint type (includes 'access_token' + 'fields')
+        if ( $ep->{type} eq 'std' ) {
 
             # add access_token & fields
             my $object = $ep->{object}
-              or die "Error in '$k' endpoint specs: no 'object' where type='std'\n";
+              or die
+              "Error in '$k' endpoint specs: no 'object' where type='std'\n";
             $params->{access_token} //= { spec => 'access-token' };
             $params->{fields} //= { spec => "$object-fields", optional => 1 };
         }
