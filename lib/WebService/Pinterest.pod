@@ -1,0 +1,41 @@
+
+=head1 NAME
+
+WebService::Pinterest - Pinterest API client
+
+=head1 SYNOPSIS
+
+
+    use WebService::Pinterest;
+
+    $pinner = WebService::Pinterest->new( access_token => $access_token );
+
+    $r1 = $pinner->fetch('me/pins');
+    $r2 = $pinner->fetch( '/user/pins', user => $user_id );
+
+    $r3 = $pinner->create( 'me/board', board => 'nobody/board' );
+    $r4 = $pinner->create(
+        'me/pin',
+        board     => 'nobody/board',
+        note      => '',
+        image_url => '',
+        link      => '',
+    );
+
+    $pinner = WebService::Pinterest->new(
+        client_id  => $client_id,
+        app_secret => $secret
+    );
+    $url = $pinner->authentication_url(
+        response_type => 'code',
+        state         => $state,
+        scope         => 'read_public',
+        redirect_uri  => 'https://my.app.com/connect/pinterest',
+    );
+
+    $res = $pinner->get_access_token(
+        grant_type => 'authorization_code',
+        code       => $code,
+    );
+
+
