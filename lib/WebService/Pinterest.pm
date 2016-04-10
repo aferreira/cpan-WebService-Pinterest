@@ -50,6 +50,11 @@ has ua => (
 
 has last_ua_response => ( is => 'rw', );
 
+sub last_ua_request {
+    my $res = shift()->last_ua_response;
+    $res && $res->request;
+}
+
 # $req = $self->_build_request($method, $endpoint, %args);
 sub _build_request {
 
