@@ -50,7 +50,7 @@ my @ENDPOINTS = (
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
 
-        # TODO cursor
+        # TODO cursor, maybe type => 'std,cursor'
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
@@ -59,11 +59,7 @@ my @ENDPOINTS = (
         # TODO cursor
     },
 
-    # https://developers.pinterest.com/docs/api/users/#search-user-data
-    # https://developers.pinterest.com/docs/api/users/#create-follow-data
-    # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
-    # https://developers.pinterest.com/docs/api/users/#remove-follow-data
-
+    # hinted at https://developers.pinterest.com/docs/api/overview/#user-errors
     {
         endpoint   => [ GET => '/v1/users/:user' ],
         object     => 'user',
@@ -71,6 +67,12 @@ my @ENDPOINTS = (
             user => { spec => 'user-id' },
         },
     },
+
+    # https://developers.pinterest.com/docs/api/users/#search-user-data
+    # https://developers.pinterest.com/docs/api/users/#create-follow-data
+    # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
+    # https://developers.pinterest.com/docs/api/users/#remove-follow-data
+
     {
         endpoint => [ GET => '/v1/me/boards/' ],
         object   => 'board',
