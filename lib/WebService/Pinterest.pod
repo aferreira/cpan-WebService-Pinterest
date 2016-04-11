@@ -23,7 +23,7 @@ WebService::Pinterest - Pinterest API client
     );
 
     $pinner = WebService::Pinterest->new(
-        client_id  => $client_id,
+        app_id     => $client_id,
         app_secret => $secret
     );
     $url = $pinner->authentication_url(

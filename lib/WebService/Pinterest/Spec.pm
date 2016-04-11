@@ -29,7 +29,12 @@ my @ENDPOINTS = (
     {
         type       => '',                              # FIXME
         endpoint   => [ POST => '/v1/oauth/token' ],
-        parameters => {},
+        parameters => {
+            grant_type    => { spec => 'grant-type' },
+            client_id     => { spec => 'client-id' },
+            client_secret => { spec => 'any' },
+            code          => { spec => 'any' },
+        },
     },
 
     # Users
@@ -122,6 +127,12 @@ sub is_pinterest_response_code {
     return 0;
 }
 
+sub is_pinterest_grant_type {
+    my $suspect = shift;
+    return 1 if defined $suspect && ( $suspect eq 'authorization_code' );
+    return 0;
+}
+
 # spec x predicate
 my %PREDICATE_FOR = (
 
@@ -129,6 +140,7 @@ my %PREDICATE_FOR = (
     'https-uri' => \&is_https_uri,
     'web-uri'   => \&is_web_uri,
     'pinterest:response-code' => \&is_pinterest_response_code,
+    'pinterest:grant-type'    => \&is_pinterest_grant_type,
     'pinterest:client-id'     => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
     'pinterest:pin-id'        => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
     'pinterest:user-id'       => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
