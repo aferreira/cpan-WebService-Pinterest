@@ -193,6 +193,22 @@ sub create {
     return $self->call( POST => $resource, query => {@_} );
 }
 
+sub edit {
+    my $self     = shift;
+    my $resource = shift;
+
+    # FIXME check resource exists
+    return $self->call( PATCH => $resource, query => {@_} );
+}
+
+sub delete {
+    my $self     = shift;
+    my $resource = shift;
+
+    # FIXME check resource exists
+    return $self->call( DELETE => $resource, query => {@_} );
+}
+
 sub create_pin {
     my $self = shift;
     return $self->call( POST => '/v1/pins/', query => {@_} );
