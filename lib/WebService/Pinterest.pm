@@ -12,10 +12,13 @@ with 'WebService::Pinterest::Spec';
 use HTTP::Request;
 use LWP::UserAgent;
 use JSON::XS;
+use Carp qw(croak);
+
+use namespace::autoclean;
 
 has app_id => (
-    is       => 'ro',
-    required => 1,
+    is        => 'ro',
+    predicate => 'has_app_id',
 );
 
 has app_secret => (
@@ -113,21 +116,51 @@ sub call {
     return $r;
 }
 
-sub _auth_code {
+# $url = $api->authorization_url(
+#                response_type => 'code',
+#                state         => $state,
+#                scope         => $permission_scope, # eg. 'read_public,write_public'
+#                redirect_uri  => $redirect_uri,     # defined in your app settings
+#                );
+#
+# Used to get the authorization from app user
+sub authorization_url {
+    my $self = shift;
 
-    # GET /oauth
-    #    response_type: code
-    #    client_id: <app_id>
-    #    state:     <state>
-    #    scope:     <permission scopes>, eg 'read_public,write_public'
-    #    redirect_uri
+    unless ( $self->has_app_id ) {
+        croak "Attribute app_id must be set";    # FIXME throw
+    }
+
+    my $req = $self->_build_request(
+        GET   => '/oauth',
+        query => {
+            client_id => $self->app_id,
+            @_,
+        }
+    );
+    return $req->uri->as_string;
 }
 
-sub authenticate {
+#    $res = $pinner->get_access_token(
+#        grant_type => 'authorization_code',
+#        code       => $code,
+#    );
+# Used to get authorization code
+sub get_access_token {
+    my $self = shift;
 
-    # Get authorization code
-    #
-    # Get access token
+    unless ( $self->has_app_id && $self->has_app_secret ) {
+        croak "Attributes app_id & app_secret must be set";    # FIXME throw
+    }
+
+    return $self->call(
+        POST  => '/v1/oauth/token',
+        query => {
+            client_id     => $self->app_id,
+            client_secret => $self->app_secret,
+            @_,
+        },
+    );
 }
 
 sub fetch_me        { shift()->call( GET => '/v1/me/',        query => {@_} ) }

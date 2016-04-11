@@ -26,7 +26,7 @@ WebService::Pinterest - Pinterest API client
         app_id     => $client_id,
         app_secret => $secret
     );
-    $url = $pinner->authentication_url(
+    $url = $pinner->authorization_url(
         response_type => 'code',
         state         => $state,
         scope         => 'read_public',
