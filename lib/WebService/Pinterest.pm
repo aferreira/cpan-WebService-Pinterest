@@ -186,11 +186,11 @@ sub fetch {
 }
 
 sub create {
-        my $self = shift;
-        my $resource = shift;
+    my $self     = shift;
+    my $resource = shift;
 
-        # FIXME check resource exists
-        return $self->call(POST => $resource, query => {@_} );
+    # FIXME check resource exists
+    return $self->call( POST => $resource, query => {@_} );
 }
 
 sub create_pin {
