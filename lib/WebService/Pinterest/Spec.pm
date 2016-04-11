@@ -106,6 +106,7 @@ my @ENDPOINTS = (
         parameters => {
             user => { spec => 'user-id' },
         },
+        # 'POST /v1/me/following/users/:user/' works too 2016-04-10
     },
 
     # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
