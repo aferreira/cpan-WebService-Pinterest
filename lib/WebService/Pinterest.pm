@@ -143,13 +143,21 @@ sub fetch_pin {
     return shift()->call( GET => '/v1/pins/:pin/', query => {@_} );
 }
 
-# $res = $api->fetch($entity, %args);
+# $res = $api->fetch($resource, %args);
 sub fetch {
     my $self     = shift;
     my $resource = shift;
 
     # FIXME check resource exists
     return $self->call( GET => $resource, query => {@_} );
+}
+
+sub create {
+        my $self = shift;
+        my $resource = shift;
+
+        # FIXME check resource exists
+        return $self->call(POST => $resource, query => {@_} );
 }
 
 sub create_pin {
