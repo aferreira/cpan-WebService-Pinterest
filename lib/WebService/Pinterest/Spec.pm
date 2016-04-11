@@ -55,14 +55,12 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
-
-        # TODO cursor, maybe type => 'std+cursor' or '+cursor'
+        ## TODO cursor, maybe type => 'std+cursor' or '+cursor'
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
         object   => 'pin',
-
-        # TODO cursor
+        ## TODO cursor
     },
 
     # hinted at https://developers.pinterest.com/docs/api/overview/#user-errors
@@ -106,6 +104,7 @@ my @ENDPOINTS = (
         parameters => {
             user => { spec => 'user-id' },
         },
+
         # 'POST /v1/me/following/users/:user/' works too 2016-04-10
     },
 
@@ -147,6 +146,17 @@ my @ENDPOINTS = (
         },
     },
 
+    # https://developers.pinterest.com/docs/api/boards/#create-boards
+    {
+        endpoint   => [ POST => '/v1/boards/' ],
+        object     => 'board',
+        parameters => {
+            name        => { spec => 'any' },
+            description => { spec => 'any', optional => 1 },
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/boards/#fetch-board-data
     {
         endpoint   => [ GET => '/v1/boards/:board/' ],
         object     => 'board',
@@ -154,6 +164,38 @@ my @ENDPOINTS = (
             board => { spec => 'board' },
         },
     },
+    {
+        endpoint   => [ GET => '/v1/boards/:board/pins/' ],
+        object     => 'pin',
+        parameters => {
+            board => { spec => 'board' },
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/boards/#edit-boards
+    {
+        endpoint   => [ PATCH => '/v1/boards/:board/' ],
+        object     => 'board',
+        parameters => {
+            board       => { spec => 'board' },
+            name        => { spec => 'any', optional => 1, },
+            description => { spec => 'any', optional => 1 },
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/boards/#delete-boards
+    {
+        endpoint   => [ DELETE => '/v1/boards/:board/' ],
+        object     => 'board',
+        parameters => {
+            board => { spec => 'board' },
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/pins/#create-pins
+    # https://developers.pinterest.com/docs/api/pins/#fetch-pins
+    # https://developers.pinterest.com/docs/api/pins/#edit-pins
+    # https://developers.pinterest.com/docs/api/pins/#delete-pins
     {
         endpoint   => [ GET => '/v1/pins/:pin/' ],
         object     => 'pin',
@@ -207,9 +249,10 @@ my %PREDICATE_FOR = (
     'pinterest:response-code' => \&is_pinterest_response_code,
     'pinterest:grant-type'    => \&is_pinterest_grant_type,
     'pinterest:client-id'     => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:pin-id'        => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
+    'pinterest:pin-id'        => sub { shift() =~ qr/^[a-zA-Z0-9\-]+$/ },
     'pinterest:user-id'       => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:board' => sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9]+$|^[0-9]+$} },
+    'pinterest:board' =>
+      sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
     'pinterest:permission-list' => \&is_pinterest_permission_list,
 
 );
