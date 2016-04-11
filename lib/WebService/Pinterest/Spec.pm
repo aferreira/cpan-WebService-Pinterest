@@ -214,6 +214,8 @@ sub _compile_endpoints {
         my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
 
+        die "Error: endpoint '$k' redefined\n" if exists $compiled->{$k};
+
         $ep->{type} //=
           'std';    # default endpoint type (includes 'access_token' + 'fields')
         if ( $ep->{type} eq 'std' ) {
