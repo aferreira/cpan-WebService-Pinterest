@@ -36,7 +36,7 @@ my @ENDPOINTS = (
             code          => { spec => 'any' },
         },
     },
-    # TODO oauth/inspect
+    ## TODO oauth/inspect
 
     # Users
     # https://developers.pinterest.com/docs/api/users/#fetch-user-data
@@ -56,7 +56,7 @@ my @ENDPOINTS = (
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
 
-        # TODO cursor, maybe type => 'std,cursor'
+        # TODO cursor, maybe type => 'std+cursor' or '+cursor'
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
@@ -75,14 +75,77 @@ my @ENDPOINTS = (
     },
 
     # https://developers.pinterest.com/docs/api/users/#search-user-data
-    # https://developers.pinterest.com/docs/api/users/#create-follow-data
-    # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
-    # https://developers.pinterest.com/docs/api/users/#remove-follow-data
-
     {
-        endpoint => [ GET => '/v1/me/boards/' ],
-        object   => 'board',
+        endpoint   => [ GET => '/v1/me/search/boards/' ],
+        object     => 'board',
+        parameters => {
+            query => { spec => 'any' },
+        },
+        ## TODO cursor
     },
+    {
+        endpoint   => [ GET => '/v1/me/search/pins/' ],
+        object     => 'board',
+        parameters => {
+            query => { spec => 'any' },
+        },
+        ## TODO cursor
+    },
+
+    # https://developers.pinterest.com/docs/api/users/#create-follow-data
+    {
+        endpoint   => [ POST => '/v1/me/following/boards/' ],
+        object     => 'board',
+        parameters => {
+            board => { spec => 'board' },
+        },
+    },
+    {
+        endpoint   => [ POST => '/v1/me/following/users/' ],
+        object     => 'user',
+        parameters => {
+            user => { spec => 'user-id' },
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
+    {
+        endpoint => [ GET => '/v1/me/followers/' ],
+        object   => 'user',
+        ## TODO cursor
+    },
+    {
+        endpoint => [ GET => '/v1/me/following/boards/' ],
+        object   => 'board',
+        ## TODO cursor
+    },
+    {
+        endpoint => [ GET => '/v1/me/following/interests/' ],
+        object   => 'interest',
+        ## TODO cursor
+    },
+    {
+        endpoint => [ GET => '/v1/me/following/users/' ],
+        object   => 'user',
+        ## TODO cursor
+    },
+
+    # https://developers.pinterest.com/docs/api/users/#remove-follow-data
+    {
+        endpoint   => [ DELETE => '/v1/me/following/boards/:board/' ],
+        object     => 'board',
+        parameters => {
+            board => { spec => 'board' },
+        },
+    },
+    {
+        endpoint   => [ DELETE => '/v1/me/following/users/:user/' ],
+        object     => 'user',
+        parameters => {
+            user => { spec => 'user-id' },
+        },
+    },
+
     {
         endpoint   => [ GET => '/v1/boards/:board/' ],
         object     => 'board',
@@ -153,6 +216,8 @@ $PREDICATE_FOR{'pinterest:access-token'} = $PREDICATE_FOR{'any'};
 $PREDICATE_FOR{'pinterest:user-fields'}  = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:board-fields'} = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:pin-fields'}   = $PREDICATE_FOR{'any'};    # FIXME
+$PREDICATE_FOR{'pinterest:interest-fields'} =
+  $PREDICATE_FOR{'any'};    # FIXME at least id,name
 
 sub _compile_spec {
     my $specs = shift;
