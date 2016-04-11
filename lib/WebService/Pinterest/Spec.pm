@@ -36,6 +36,7 @@ my @ENDPOINTS = (
             code          => { spec => 'any' },
         },
     },
+    # TODO oauth/inspect
 
     # Users
     # https://developers.pinterest.com/docs/api/users/#fetch-user-data
