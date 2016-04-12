@@ -22,6 +22,8 @@ WebService::Pinterest - Pinterest API client
         link      => '',
     );
 
+    $r5 = $pinner->edit( 'me/pin', pin => 9999999, note => 'xxx', link => 'http://' );
+
     $pinner = WebService::Pinterest->new(
         app_id     => $client_id,
         app_secret => $secret
