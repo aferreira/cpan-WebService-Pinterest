@@ -17,7 +17,7 @@ use namespace::autoclean;
 
 my @ENDPOINTS = (
     {
-        type       => '',                    # FIXME
+        type       => 'plain',
         endpoint   => [ GET => '/oauth' ],
         parameters => {
             response_type => { spec => 'response-code' },
@@ -29,7 +29,7 @@ my @ENDPOINTS = (
         },
     },
     {
-        type       => '',                              # FIXME
+        type       => 'plain',
         endpoint   => [ POST => '/v1/oauth/token' ],
         parameters => {
             grant_type    => { spec => 'grant-type' },
