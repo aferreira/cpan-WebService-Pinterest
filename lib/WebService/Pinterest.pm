@@ -58,26 +58,44 @@ sub last_ua_request {
     $res && $res->request;
 }
 
-# $req = $self->_build_request($method, $endpoint, %args);
+# $req = $self->_build_request($method, $endpoint, %params);
+# $req = $self->_build_request($method, $endpoint, \%params);
+# $req = $self->_build_request($method, $endpoint, \%params, \%opts);
 sub _build_request {
+    my $self     = shift;
+    my $method   = shift;
+    my $endpoint = shift;
 
-    my ( $self, $method, $endpoint, %args ) = @_;
+    my ( $params, $opts );
+    if ( ref $_[0] eq 'HASH' ) {    # \%params
+        $params = shift;
+        if (@_) {                   # \%opts
+            die "Invalid usage" unless ref $_[0] eq 'HASH';
+            $opts = shift;
+        }
+    }
+    elsif ( @_ % 2 == 0 ) {         # %params
+        $params = {@_};
+    }
+    else {
+        die "Invalid usage";
+    }
+    ## FIXME explain better "Invalid usage" errors
 
     # TODO check: $method is one of GET, POST, PATCH, DELETE
     # TODO check: $endpoint looks like relative or absolute file path
-    # TODO check: $query is map<str,str>
-    #
 
-    my $q = $args{query} // {};
-    my $p = ( $endpoint =~ m{^/} ) ? $endpoint : '/v1/' . $endpoint;
+    unless ( $endpoint =~ m{^/} ) {
+        $endpoint = '/v1/' . $endpoint;
+    }
 
-    $q =
-      $self->has_access_token
-      ? { access_token => $self->access_token, %$q }
-      : $q;
+    if ( $self->has_access_token ) {
+        $params = { access_token => $self->access_token, %$params };
+    }
 
     # Validate params
-    my ( $path, $query ) = $self->validate_endpoint_params( $method, $p, $q );
+    my ( $path, $query ) =
+      $self->validate_endpoint_params( $method, $endpoint, $params, $opts );
 
     my $uri = URI->new;
     $uri->scheme( $self->api_scheme );
@@ -89,10 +107,12 @@ sub _build_request {
     return $req;
 }
 
-# ($res, $http_res) = $api->call( $method => $endpoint, query => \%query );
+# $res = $api->call( $method => $endpoint, %params );
+# $res = $api->call( $method => $endpoint, \%params );
+# $res = $api->call( $method => $endpoint, \%params, \%opts );
 sub call {
-    my ( $self, $method, $endpoint, %args ) = @_;
-    my $req = $self->_build_request( $method, $endpoint, %args );
+    my $self = shift;
+    my $req  = $self->_build_request(@_);
 
     # TODO catch exception, convert to error response
 
@@ -132,11 +152,11 @@ sub authorization_url {
     }
 
     my $req = $self->_build_request(
-        GET   => '/oauth',
-        query => {
+        GET => '/oauth',
+        {
             client_id => $self->app_id,
             @_,
-        }
+        },
     );
     return $req->uri->as_string;
 }
@@ -154,8 +174,8 @@ sub get_access_token {
     }
 
     return $self->call(
-        POST  => '/v1/oauth/token',
-        query => {
+        POST => '/v1/oauth/token',
+        {
             client_id     => $self->app_id,
             client_secret => $self->app_secret,
             @_,
@@ -163,18 +183,16 @@ sub get_access_token {
     );
 }
 
-sub fetch_me        { shift()->call( GET => '/v1/me/',        query => {@_} ) }
-sub fetch_my_boards { shift()->call( GET => '/v1/me/boards/', query => {@_} ) }
+sub fetch_me        { shift()->call( GET => '/v1/me/',        @_ ) }
+sub fetch_my_boards { shift()->call( GET => '/v1/me/boards/', @_ ) }
 
 sub fetch_my_suggested_boards {
-    shift()->call( GET => '/v1/me/boards/suggested/', query => {@_} );
-}
-sub fetch_my_likes { shift()->call( GET => '/v1/me/likes/', query => {@_} ) }
-sub fetch_my_pins  { shift()->call( GET => '/v1/me/pins/',  query => {@_} ) }
+    shift()->call( GET => '/v1/me/boards/suggested/', @_ );
+}    ##
+sub fetch_my_likes { shift()->call( GET => '/v1/me/likes/', @_ ) }
+sub fetch_my_pins  { shift()->call( GET => '/v1/me/pins/',  @_ ) }
 
-sub fetch_pin {
-    return shift()->call( GET => '/v1/pins/:pin/', query => {@_} );
-}
+sub fetch_pin { shift()->call( GET => '/v1/pins/:pin/', @_ ) }
 
 # $res = $api->fetch($resource, %args);
 sub fetch {
@@ -182,7 +200,7 @@ sub fetch {
     my $resource = shift;
 
     # FIXME check resource exists
-    return $self->call( GET => $resource, query => {@_} );
+    return $self->call( GET => $resource, @_ );
 }
 
 sub create {
@@ -190,7 +208,7 @@ sub create {
     my $resource = shift;
 
     # FIXME check resource exists
-    return $self->call( POST => $resource, query => {@_} );
+    return $self->call( POST => $resource, @_ );
 }
 
 sub edit {
@@ -198,7 +216,7 @@ sub edit {
     my $resource = shift;
 
     # FIXME check resource exists
-    return $self->call( PATCH => $resource, query => {@_} );
+    return $self->call( PATCH => $resource, @_ );
 }
 
 sub delete {
@@ -206,12 +224,12 @@ sub delete {
     my $resource = shift;
 
     # FIXME check resource exists
-    return $self->call( DELETE => $resource, query => {@_} );
+    return $self->call( DELETE => $resource, @_ );
 }
 
 sub create_pin {
     my $self = shift;
-    return $self->call( POST => '/v1/pins/', query => {@_} );
+    return $self->call( POST => '/v1/pins/', @_ );
 }
 
 1;

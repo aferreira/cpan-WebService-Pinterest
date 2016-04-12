@@ -390,9 +390,11 @@ sub find_endpoint {
     return $COMPILED_ENDPOINTS->{$k};
 }
 
-# ($path, $query) = $api->validate_endpoint_params($method, $endpoint, $params);
+# ($path, $query) = $api->validate_endpoint_params($method, $endpoint, $params, $opts);
 sub validate_endpoint_params {
-    my ( $self, $method, $endpoint, $params ) = @_;
+    my ( $self, $method, $endpoint, $params, $opts ) = @_;
+    $opts //= {};
+
     my $compiled = $self->find_endpoint( $method, $endpoint );
     unless ($compiled) {
         carp "Could not find spec for '$method $endpoint'";
@@ -405,6 +407,7 @@ sub validate_endpoint_params {
 
         #normalize
         #called
+        allow_extra => $opts->{allow_extra},
     );
 
     my $path;
