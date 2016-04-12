@@ -11,6 +11,8 @@ use Params::Validate qw(:all);
 use Data::Validate::URI qw(is_web_uri is_https_uri);
 use List::MoreUtils qw(all);
 
+use WebService::Pinterest::X;
+
 use namespace::autoclean;
 
 my @ENDPOINTS = (
@@ -423,29 +425,6 @@ sub validate_endpoint_params {
     # FIXME $params is changed
 
     return ( $path, $params );
-}
-
-package WebService::Pinterest::Spec::X;
-
-use overload '""' => \&as_string;
-
-sub new {
-    my $proto = shift;
-    my $class = ref $proto || $proto;
-    bless shift(), $class;
-}
-
-sub throw {
-    die shift->new(shift);
-}
-
-# key
-# value
-# message
-
-sub as_string {
-    my $self = shift;
-    return sprintf $self->{message}, $self->{key}, $self->{value};
 }
 
 1;
