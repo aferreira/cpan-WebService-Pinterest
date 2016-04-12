@@ -357,11 +357,9 @@ sub _compile_endpoints {
         if ( $ep->{type} eq 'std' ) {
 
             # add access_token & fields
-            my $object = $ep->{object}
-              or die
-              "Error in '$k' endpoint specs: no 'object' where type='std'\n";
+            my $object = $ep->{object};
             $params->{access_token} //= { spec => 'access-token' };
-            $params->{fields} //= { spec => "$object-fields", optional => 1 };
+            $params->{fields} //= { spec => "$object-fields", optional => 1 } if $object;
         }
 
         my $path = $endpoint->[1];
