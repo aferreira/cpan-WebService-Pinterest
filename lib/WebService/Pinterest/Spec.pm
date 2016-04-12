@@ -429,14 +429,3 @@ sub validate_endpoint_params {
 
 1;
 
-__END__
-
-sub _auth_code {
-        # GET /oauth
-        #    response_type: code
-        #    client_id: <app_id>
-        #    state:     <state>
-        #    scope:     <permission scopes>, eg 'read_public,write_public'
-        #    redirect_uri
-}
-
