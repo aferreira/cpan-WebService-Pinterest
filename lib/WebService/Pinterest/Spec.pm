@@ -193,9 +193,22 @@ my @ENDPOINTS = (
     },
 
     # https://developers.pinterest.com/docs/api/pins/#create-pins
+    {
+        endpoint   => [ POST => '/v1/pins/' ],
+        object     => 'pin',
+        parameters => {
+            board          => { spec => 'board' },
+            note           => { spec => 'any', },
+            link           => { spec => 'web-uri', optional => 1 },
+            image_url      => { spec => 'web-uri', optional => 1 },
+            image_base64 => { spec => 'web-uri', optional => 1 },
+
+            #image_upload => { spec => 'upload', optional => 1},
+            ## FIXME implement one-of-three requirement
+        },
+    },
+
     # https://developers.pinterest.com/docs/api/pins/#fetch-pins
-    # https://developers.pinterest.com/docs/api/pins/#edit-pins
-    # https://developers.pinterest.com/docs/api/pins/#delete-pins
     {
         endpoint   => [ GET => '/v1/pins/:pin/' ],
         object     => 'pin',
@@ -203,14 +216,25 @@ my @ENDPOINTS = (
             pin => { spec => 'pin-id' },
         },
     },
+
+    # https://developers.pinterest.com/docs/api/pins/#edit-pins
     {
-        endpoint   => [ POST => '/v1/pins/' ],
+        endpoint   => [ PATCH => '/v1/pins/:pin/' ],
         object     => 'pin',
         parameters => {
-            board => { spec => 'board' },
-            note  => { spec => 'any', },
+            pin   => { spec => 'pin-id' },
+            board => { spec => 'board', optional => 1 },
+            note  => { spec => 'any', optional => 1 },
             link  => { spec => 'web-uri', optional => 1 },
-            image_url => { spec => 'web-uri' },    # FIXME other options
+        },
+    },
+
+    # https://developers.pinterest.com/docs/api/pins/#delete-pins
+    {
+        endpoint   => [ DELETE => '/v1/pins/:pin/' ],
+        object     => 'pin',
+        parameters => {
+            pin => { spec => 'pin-id' },
         },
     },
 );
