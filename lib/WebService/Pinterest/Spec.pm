@@ -70,7 +70,7 @@ my @ENDPOINTS = (
         endpoint   => [ GET => '/v1/users/:user' ],
         object     => 'user',
         parameters => {
-            user => { spec => 'user-id' },
+            user => { spec => 'user-uid' },
         },
     },
 
@@ -97,14 +97,14 @@ my @ENDPOINTS = (
         endpoint   => [ POST => '/v1/me/following/boards/' ],
         object     => 'board',
         parameters => {
-            board => { spec => 'board' },
+            board => { spec => 'board-uid' },
         },
     },
     {
         endpoint   => [ POST => '/v1/me/following/users/' ],
         object     => 'user',
         parameters => {
-            user => { spec => 'user-id' },
+            user => { spec => 'user-uid' },
         },
 
         # 'POST /v1/me/following/users/:user/' works too 2016-04-10
@@ -137,14 +137,14 @@ my @ENDPOINTS = (
         endpoint   => [ DELETE => '/v1/me/following/boards/:board/' ],
         object     => 'board',
         parameters => {
-            board => { spec => 'board' },
+            board => { spec => 'board-uid' },
         },
     },
     {
         endpoint   => [ DELETE => '/v1/me/following/users/:user/' ],
         object     => 'user',
         parameters => {
-            user => { spec => 'user-id' },
+            user => { spec => 'user-uid' },
         },
     },
 
@@ -163,14 +163,14 @@ my @ENDPOINTS = (
         endpoint   => [ GET => '/v1/boards/:board/' ],
         object     => 'board',
         parameters => {
-            board => { spec => 'board' },
+            board => { spec => 'board-uid' },
         },
     },
     {
         endpoint   => [ GET => '/v1/boards/:board/pins/' ],
         object     => 'pin',
         parameters => {
-            board => { spec => 'board' },
+            board => { spec => 'board-uid' },
         },
     },
 
@@ -179,7 +179,7 @@ my @ENDPOINTS = (
         endpoint   => [ PATCH => '/v1/boards/:board/' ],
         object     => 'board',
         parameters => {
-            board       => { spec => 'board' },
+            board       => { spec => 'board-uid' },
             name        => { spec => 'any', optional => 1, },
             description => { spec => 'any', optional => 1 },
         },
@@ -190,7 +190,7 @@ my @ENDPOINTS = (
         endpoint   => [ DELETE => '/v1/boards/:board/' ],
         object     => 'board',
         parameters => {
-            board => { spec => 'board' },
+            board => { spec => 'board-uid' },
         },
     },
 
@@ -199,7 +199,7 @@ my @ENDPOINTS = (
         endpoint   => [ POST => '/v1/pins/' ],
         object     => 'pin',
         parameters => {
-            board          => { spec => 'board' },
+            board          => { spec => 'board-uid' },
             note           => { spec => 'any', },
             link           => { spec => 'web-uri', optional => 1 },
             image_url      => { spec => 'web-uri', optional => 1 },
@@ -215,7 +215,7 @@ my @ENDPOINTS = (
         endpoint   => [ GET => '/v1/pins/:pin/' ],
         object     => 'pin',
         parameters => {
-            pin => { spec => 'pin-id' },
+            pin => { spec => 'pin-uid' },
         },
     },
 
@@ -224,8 +224,8 @@ my @ENDPOINTS = (
         endpoint   => [ PATCH => '/v1/pins/:pin/' ],
         object     => 'pin',
         parameters => {
-            pin   => { spec => 'pin-id' },
-            board => { spec => 'board', optional => 1 },
+            pin   => { spec => 'pin-uid' },
+            board => { spec => 'board-uid', optional => 1 },
             note  => { spec => 'any', optional => 1 },
             link  => { spec => 'web-uri', optional => 1 },
         },
@@ -236,7 +236,7 @@ my @ENDPOINTS = (
         endpoint   => [ DELETE => '/v1/pins/:pin/' ],
         object     => 'pin',
         parameters => {
-            pin => { spec => 'pin-id' },
+            pin => { spec => 'pin-uid' },
         },
     },
 );
@@ -275,9 +275,9 @@ my %PREDICATE_FOR = (
     'pinterest:response-code' => \&is_pinterest_response_code,
     'pinterest:grant-type'    => \&is_pinterest_grant_type,
     'pinterest:client-id'     => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:pin-id'        => sub { shift() =~ qr/^[a-zA-Z0-9-]+$/ },
-    'pinterest:user-id'       => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:board' =>
+    'pinterest:pin-uid'        => sub { shift() =~ qr/^[a-zA-Z0-9-]+$/ },
+    'pinterest:user-uid'       => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
+    'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
     'pinterest:permission-list' => \&is_pinterest_permission_list,
 
