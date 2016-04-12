@@ -141,7 +141,7 @@ sub call {
 #                state         => $state,
 #                scope         => $permission_scope, # eg. 'read_public,write_public'
 #                redirect_uri  => $redirect_uri,     # defined in your app settings
-#                );
+# );
 #
 # Used to get the authorization from app user
 sub authorization_url {
@@ -185,14 +185,12 @@ sub get_access_token {
 
 sub fetch_me        { shift()->call( GET => '/v1/me/',        @_ ) }
 sub fetch_my_boards { shift()->call( GET => '/v1/me/boards/', @_ ) }
-
-sub fetch_my_suggested_boards {
-    shift()->call( GET => '/v1/me/boards/suggested/', @_ );
-}    ##
+sub fetch_my_suggested_boards { shift()->call( GET => '/v1/me/boards/suggested/', @_ ) }
 sub fetch_my_likes { shift()->call( GET => '/v1/me/likes/', @_ ) }
 sub fetch_my_pins  { shift()->call( GET => '/v1/me/pins/',  @_ ) }
 
 sub fetch_pin { shift()->call( GET => '/v1/pins/:pin/', @_ ) }
+sub create_pin { shift()->call( POST => '/v1/pins/', @_ ) }
 
 # $res = $api->fetch($resource, %args);
 sub fetch {
@@ -206,7 +204,7 @@ sub fetch {
 sub create {
     my $self     = shift;
     my $resource = shift;
-
+    #my $endpoint = $self->_resolve_resource($resource, @_);
     # FIXME check resource exists
     return $self->call( POST => $resource, @_ );
 }
@@ -227,9 +225,5 @@ sub delete {
     return $self->call( DELETE => $resource, @_ );
 }
 
-sub create_pin {
-    my $self = shift;
-    return $self->call( POST => '/v1/pins/', @_ );
-}
 
 1;
