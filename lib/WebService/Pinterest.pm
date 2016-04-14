@@ -197,33 +197,44 @@ sub fetch {
     my $self     = shift;
     my $resource = shift;
 
-    # FIXME check resource exists
-    return $self->call( GET => $resource, @_ );
+    my $endpoint = $self->find_resource( GET => $resource );
+    unless ($endpoint) {
+        croak "Can't find resource '$resource' to fetch\n";    # FIXME throw
+    }
+    return $self->call( @$endpoint, @_ );
 }
 
 sub create {
     my $self     = shift;
     my $resource = shift;
-    #my $endpoint = $self->_resolve_resource($resource, @_);
-    # FIXME check resource exists
-    return $self->call( POST => $resource, @_ );
+
+    my $endpoint = $self->find_resource( POST => $resource );
+    unless ($endpoint) {
+        croak "Can't find resource '$resource' to create\n";    # FIXME throw
+    }
+    return $self->call( @$endpoint, @_ );
 }
 
 sub edit {
     my $self     = shift;
     my $resource = shift;
 
-    # FIXME check resource exists
-    return $self->call( PATCH => $resource, @_ );
+    my $endpoint = $self->find_resource( PATCH => $resource );
+    unless ($endpoint) {
+        croak "Can't find resource '$resource' to edit\n";      # FIXME throw
+    }
+    return $self->call( @$endpoint, @_ );
 }
 
 sub delete {
     my $self     = shift;
     my $resource = shift;
 
-    # FIXME check resource exists
-    return $self->call( DELETE => $resource, @_ );
+    my $endpoint = $self->find_resource( DELETE => $resource );
+    unless ($endpoint) {
+        croak "Can't find resource '$resource' to delete\n";    # FIXME throw
+    }
+    return $self->call( @$endpoint, @_ );
 }
-
 
 1;

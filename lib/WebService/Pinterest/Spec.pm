@@ -45,24 +45,29 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/' ],
         object   => 'user',
+        resource => 'me',
     },
     {
         endpoint => [ GET => '/v1/me/boards/' ],
         object   => 'board',
+        resource => [ 'me/boards', 'my/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/boards/suggested/' ],
         object   => 'board',
+        resource => [ 'me/boards/suggested', 'my/suggested/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
         ## TODO cursor, maybe type => 'std+cursor' or '+cursor'
+        resource => [ 'me/likes', 'my/likes' ],
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
         object   => 'pin',
         ## TODO cursor
+        resource => [ 'me/pins', 'my/pins' ],
     },
 
     # hinted at https://developers.pinterest.com/docs/api/overview/#user-errors
@@ -72,6 +77,7 @@ my @ENDPOINTS = (
         parameters => {
             user => { spec => 'user-uid' },
         },
+        resource => 'user',
     },
 
     # https://developers.pinterest.com/docs/api/users/#search-user-data
@@ -82,6 +88,7 @@ my @ENDPOINTS = (
             query => { spec => 'any' },
         },
         ## TODO cursor
+        resource => [ 'me/search/boards', 'search/my/boards' ],
     },
     {
         endpoint   => [ GET => '/v1/me/search/pins/' ],
@@ -90,6 +97,7 @@ my @ENDPOINTS = (
             query => { spec => 'any' },
         },
         ## TODO cursor
+        resource => [ 'me/search/pins', 'search/my/pins' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#create-follow-data
@@ -99,6 +107,7 @@ my @ENDPOINTS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
+        resource => [ 'me/following/boards', 'my/following/boards' ],
     },
     {
         endpoint   => [ POST => '/v1/me/following/users/' ],
@@ -106,6 +115,7 @@ my @ENDPOINTS = (
         parameters => {
             user => { spec => 'user-uid' },
         },
+        resource => [ 'me/following/users', 'my/following/users' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
@@ -113,21 +123,27 @@ my @ENDPOINTS = (
         endpoint => [ GET => '/v1/me/followers/' ],
         object   => 'user',
         ## TODO cursor
+        resource => [ 'me/followers', 'my/followers' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/boards/' ],
         object   => 'board',
         ## TODO cursor
+        resource => [ 'me/following/boards', 'my/following/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/interests/' ],
         object   => 'interest',
         ## TODO cursor
+        resource => [
+            'me/following/interests', 'my/following/interests', 'my/interests'
+        ],
     },
     {
         endpoint => [ GET => '/v1/me/following/users/' ],
         object   => 'user',
         ## TODO cursor
+        resource => [ 'me/following/users', 'my/following/users' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#remove-follow-data
@@ -137,6 +153,7 @@ my @ENDPOINTS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
+        resource => [ 'me/following/board', 'my/following/board' ],
     },
     {
         endpoint   => [ DELETE => '/v1/me/following/users/:user/' ],
@@ -144,6 +161,7 @@ my @ENDPOINTS = (
         parameters => {
             user => { spec => 'user-uid' },
         },
+        resource => [ 'me/following/user', 'my/following/user' ],
     },
 
     # https://developers.pinterest.com/docs/api/boards/#create-boards
@@ -154,6 +172,7 @@ my @ENDPOINTS = (
             name        => { spec => 'any' },
             description => { spec => 'any', optional => 1 },
         },
+        resource => 'board',
     },
 
     # https://developers.pinterest.com/docs/api/boards/#fetch-board-data
@@ -163,6 +182,7 @@ my @ENDPOINTS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
+        resource => 'board',
     },
     {
         endpoint   => [ GET => '/v1/boards/:board/pins/' ],
@@ -170,6 +190,7 @@ my @ENDPOINTS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
+        resource => 'board/pins',
     },
 
     # https://developers.pinterest.com/docs/api/boards/#edit-boards
@@ -181,6 +202,7 @@ my @ENDPOINTS = (
             name        => { spec => 'any', optional => 1, },
             description => { spec => 'any', optional => 1 },
         },
+        resource => 'board',
     },
 
     # https://developers.pinterest.com/docs/api/boards/#delete-boards
@@ -190,6 +212,7 @@ my @ENDPOINTS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
+        resource => 'board',
     },
 
     # https://developers.pinterest.com/docs/api/pins/#create-pins
@@ -206,6 +229,7 @@ my @ENDPOINTS = (
             #image_upload => { spec => 'upload', optional => 1},
             ## FIXME implement one-of-three requirement
         },
+        resource => 'pin',
     },
 
     # https://developers.pinterest.com/docs/api/pins/#fetch-pins
@@ -215,6 +239,7 @@ my @ENDPOINTS = (
         parameters => {
             pin => { spec => 'pin-uid' },
         },
+        resource => 'pin',
     },
 
     # https://developers.pinterest.com/docs/api/pins/#edit-pins
@@ -227,6 +252,7 @@ my @ENDPOINTS = (
             note  => { spec => 'any', optional => 1 },
             link  => { spec => 'web-uri', optional => 1 },
         },
+        resource => 'pin',
     },
 
     # https://developers.pinterest.com/docs/api/pins/#delete-pins
@@ -236,6 +262,7 @@ my @ENDPOINTS = (
         parameters => {
             pin => { spec => 'pin-uid' },
         },
+        resource => 'pin',
     },
 );
 
@@ -339,16 +366,55 @@ sub _compile_path {
     return ( $tpl, \@places, \@argns );
 }
 
+my %IS_SINGULAR = (
+    'me'        => 1,
+    'my'        => 1,
+    'suggested' => 1,
+    'search'    => 1,
+    'following' => 1,
+);
+
+my %VARIANTS_OF;
+
+sub _compute_variants {
+    my $resource = shift;
+    if ( ref $resource eq 'ARRAY' ) {
+        return [ map { @{ _compute_variants($_) } } @$resource ];
+    }
+
+    my @parts = split( '/', $resource );
+    my @variants = ( [] );
+    for my $part (@parts) {
+        my $vs = $VARIANTS_OF{$part} //=
+          $IS_SINGULAR{$part}
+          ? [$part]
+          : do {
+            ( my $p = $part ) =~ s/s$//;
+            [ $p, "${p}s" ]    # w & w/o trailing "s"
+          };
+        @variants = map {
+            my $v = $_;
+            map { [ @$v, $_ ] } @$vs
+        } @variants;
+    }
+    @variants = map {
+        my $v = join( '/', @$_ );
+        ( $v, "$v/" )          # w & w/o trailing "/"
+    } @variants;
+    return \@variants;
+}
+
 sub _compile_endpoints {
 
-    my $compiled;
+    my $endpoint_map;
+    my $resource_map;
     for my $ep (@ENDPOINTS) {
         my $endpoint = $ep->{endpoint};
         my $params   = $ep->{parameters} // {};
         my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
 
-        die "Error: endpoint '$k' redefined\n" if exists $compiled->{$k};
+        die "Error: endpoint '$k' redefined\n" if exists $endpoint_map->{$k};
 
         $ep->{type} //=
           'std';    # default endpoint type (includes 'access_token' + 'fields')
@@ -376,18 +442,37 @@ sub _compile_endpoints {
         die "Failed to compile '$k' endpoint specs: $@" if $@;
         $v->{spec} = $pv_spec;
 
-        $compiled->{$k} = $v;
+        $endpoint_map->{$k} = $v;
+
+        if ( my $r = $ep->{resource} ) {
+            my $m   = $endpoint->[0];          # method
+            my $rvs = _compute_variants($r);
+            for my $rv (@$rvs) {
+                my $rk = join( ' ', $m, $rv );
+                die "Error: conflict on resource variant '$rv'\n"
+                  if exists $resource_map->{$rk};    # FIXME EXPLAIN better
+                $resource_map->{$rk} = $endpoint;
+            }
+            $resource_map->{$k} = $endpoint;
+        }
     }
-    return $compiled;
+    return ( $endpoint_map, $resource_map );
 }
 
-our $COMPILED_ENDPOINTS = _compile_endpoints();
+our ( $COMPILED_ENDPOINTS, $RESOURCE_MAP ) = _compile_endpoints();
 
 # $compiled = $api->find_endpoint($method, $endpoint);
 sub find_endpoint {
     my ( $self, $method, $endpoint ) = @_;
     my $k = join( ' ', $method, $endpoint );
     return $COMPILED_ENDPOINTS->{$k};
+}
+
+# $endpoint = $api->find_resource($method, $resource);
+sub find_resource {
+    my ( $self, $method, $resource ) = @_;
+    my $k = join( ' ', $method, $resource );
+    return $RESOURCE_MAP->{$k};
 }
 
 # ($path, $query) = $api->validate_endpoint_params($method, $endpoint, $params, $opts);
