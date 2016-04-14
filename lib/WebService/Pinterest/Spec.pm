@@ -300,7 +300,7 @@ my %PREDICATE_FOR = (
     'pinterest:response-code' => \&is_pinterest_response_code,
     'pinterest:grant-type'    => \&is_pinterest_grant_type,
     'pinterest:client-id'     => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:pin-uid'       => sub { shift() =~ qr/^[a-zA-Z0-9-]+$/ },
+    'pinterest:pin-uid'       => sub { shift() =~ qr/^[a-zA-Z0-9_-]+$/ },
     'pinterest:user-uid'      => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
     'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
