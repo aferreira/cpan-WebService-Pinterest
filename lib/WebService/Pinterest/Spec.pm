@@ -220,10 +220,10 @@ my @ENDPOINTS = (
         endpoint   => [ POST => '/v1/pins/' ],
         object     => 'pin',
         parameters => {
-            board          => { spec => 'board-uid' },
-            note           => { spec => 'any', },
-            link           => { spec => 'web-uri', optional => 1 },
-            image_url      => { spec => 'web-uri', optional => 1 },
+            board        => { spec => 'board-uid' },
+            note         => { spec => 'any', },
+            link         => { spec => 'web-uri', optional => 1 },
+            image_url    => { spec => 'web-uri', optional => 1 },
             image_base64 => { spec => 'web-uri', optional => 1 },
 
             #image_upload => { spec => 'upload', optional => 1},
@@ -300,8 +300,8 @@ my %PREDICATE_FOR = (
     'pinterest:response-code' => \&is_pinterest_response_code,
     'pinterest:grant-type'    => \&is_pinterest_grant_type,
     'pinterest:client-id'     => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
-    'pinterest:pin-uid'        => sub { shift() =~ qr/^[a-zA-Z0-9-]+$/ },
-    'pinterest:user-uid'       => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
+    'pinterest:pin-uid'       => sub { shift() =~ qr/^[a-zA-Z0-9-]+$/ },
+    'pinterest:user-uid'      => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
     'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
     'pinterest:permission-list' => \&is_pinterest_permission_list,
@@ -423,7 +423,8 @@ sub _compile_endpoints {
             # add access_token & fields
             my $object = $ep->{object};
             $params->{access_token} //= { spec => 'access-token' };
-            $params->{fields} //= { spec => "$object-fields", optional => 1 } if $object;
+            $params->{fields} //= { spec => "$object-fields", optional => 1 }
+              if $object;
         }
 
         my $path = $endpoint->[1];
