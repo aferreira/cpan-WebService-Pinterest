@@ -389,6 +389,7 @@ my %IS_SINGULAR = (
 
 my %VARIANTS_OF;
 
+# TODO change to return a list
 sub _compute_variants {
     my $resource = shift;
     if ( ref $resource eq 'ARRAY' ) {
@@ -423,8 +424,9 @@ sub _compile_endpoints {
     my $resource_map;
     for my $ep (@ENDPOINTS) {
         my $endpoint = $ep->{endpoint};
-        my $params   = $ep->{parameters} // {};
-        my $k        = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
+        my $params = $ep->{parameters} // {};
+
+        my $k = join( ' ', @$endpoint );    # eg. 'POST /v1/pins'
         my $v;
 
         die "Error: endpoint '$k' redefined\n" if exists $endpoint_map->{$k};
