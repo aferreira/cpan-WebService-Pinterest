@@ -1,0 +1,5 @@
+# .perltidyrc file
+
+-se     # Errors to STDERR
+-b      # Rewrite the file
+
