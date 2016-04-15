@@ -9,7 +9,7 @@ use Moose::Role;
 use Carp qw(carp croak);
 use Params::Validate qw(:all);
 use Data::Validate::URI qw(is_web_uri is_https_uri);
-use List::MoreUtils qw(all);
+use List::MoreUtils qw(all none);
 
 use WebService::Pinterest::X;
 
@@ -225,8 +225,7 @@ my @ENDPOINTS = (
             link         => { spec => 'web-uri', optional => 1 },
             image_url    => { spec => 'web-uri', optional => 1 },
             image_base64 => { spec => 'web-uri', optional => 1 },
-
-            #image_upload => { spec => 'upload', optional => 1},
+            image        => { spec => 'upload', optional => 1 },
             ## FIXME implement one-of-three requirement
         },
         resource => 'pin',
@@ -305,6 +304,10 @@ my %PREDICATE_FOR = (
     'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
     'pinterest:permission-list' => \&is_pinterest_permission_list,
+    'upload'                    => sub {
+        UNIVERSAL::isa( $_[0], 'WebService::Pinterest::Upload' )
+          && $_[0]->is_valid();
+    },
 
 );
 $PREDICATE_FOR{'pinterest:access-token'} = $PREDICATE_FOR{'any'};
@@ -314,8 +317,12 @@ $PREDICATE_FOR{'pinterest:pin-fields'}   = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:interest-fields'} =
   $PREDICATE_FOR{'any'};    # FIXME at least id,name
 
+my %ALLOWED_METHODS_FOR = ( 'upload' => ['POST'], );
+
+my %PARAM_VALIDATE_TYPE_FOR = ( 'upload' => OBJECT, );
+
 sub _compile_spec {
-    my $specs = shift;
+    my ( $specs, $endpoint ) = @_;
     my %specs;
     for my $k ( keys %$specs ) {
         my $v = $specs->{$k};
@@ -323,6 +330,11 @@ sub _compile_spec {
           or die "No 'spec' for parameter $k\n";
         my $p = $PREDICATE_FOR{$s} // $PREDICATE_FOR{"pinterest:$s"}
           or die "Unknown 'spec' ($s) for parameter $k\n";
+        if ( my $ms = $ALLOWED_METHODS_FOR{$s} ) {
+            my $m = $endpoint->[0];
+            die "Can't accept 'spec' ($s) - allowed only for @$ms\n"
+              if none { $_ eq $m } @$ms;
+        }
         my $cb = sub {
             return 1 if $p->( $_[0] );
             WebService::Pinterest::Spec::X->throw(
@@ -333,7 +345,8 @@ sub _compile_spec {
                 }
             );
         };
-        $specs{$k} = { %$v, type => SCALAR, callbacks => { check => $cb } };
+        my $t = $PARAM_VALIDATE_TYPE_FOR{$s} // SCALAR;
+        $specs{$k} = { %$v, type => $t, callbacks => { check => $cb } };
     }
     return \%specs;
 }
@@ -439,7 +452,7 @@ sub _compile_endpoints {
         }
 
         my $spec = $params;
-        my $pv_spec = eval { _compile_spec($spec) };
+        my $pv_spec = eval { _compile_spec( $spec, $endpoint ) };
         die "Failed to compile '$k' endpoint specs: $@" if $@;
         $v->{spec} = $pv_spec;
 
@@ -509,7 +522,18 @@ sub validate_endpoint_params {
 
     # FIXME $params is changed
 
-    return ( $path, $params );
+    my @more;
+    if (
+        my @uploads =
+        map { $_ => ( delete $params->{$_} )->lwp_file_spec } grep {
+            UNIVERSAL::isa( $params->{$_}, 'WebService::Pinterest::Upload' )
+        } keys %$params
+      )
+    {
+        @more = \@uploads;
+    }
+
+    return ( $path, $params, @more );
 }
 
 1;

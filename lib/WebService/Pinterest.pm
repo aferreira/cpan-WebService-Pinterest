@@ -10,7 +10,10 @@ use Moose;
 with 'WebService::Pinterest::Spec';
 with 'WebService::Pinterest::Common';
 
+use WebService::Pinterest::Upload;
+
 use HTTP::Request;
+use HTTP::Request::Common ();
 use LWP::UserAgent;
 use JSON::XS;
 use Carp qw(croak);
@@ -95,7 +98,7 @@ sub _build_request {
     }
 
     # Validate params
-    my ( $path, $query ) =
+    my ( $path, $query, $form_data ) =
       $self->validate_endpoint_params( $method, $endpoint, $params, $opts );
 
     my $uri = URI->new;
@@ -104,8 +107,23 @@ sub _build_request {
     $uri->path($path);
     $uri->query_form($query);
 
-    my $req = HTTP::Request->new( $method => $uri );
-    return $req;
+    if ($form_data) {
+        return HTTP::Request::Common::POST(
+            $uri,
+            'Content-Type' => 'multipart/form-data',
+            Content        => $form_data
+        );
+    }
+    else {
+        return HTTP::Request->new( $method => $uri );
+    }
+}
+
+# $upload = $api->upload($file);
+# $upload = $api->upload($file, $filename);
+sub upload {
+    shift();
+    return WebService::Pinterest::Upload->new( args => [@_] );
 }
 
 # $res = $api->call( $method => $endpoint, %params );
