@@ -50,7 +50,14 @@ has api_scheme => (
 
 has ua => (
     is      => 'ro',
-    default => sub { LWP::UserAgent->new },
+    default => sub { LWP::UserAgent->new( agent => shift->ua_string ) },
+    lazy    => 1,
+);
+
+has ua_string => (
+    is => 'ro',
+    default =>
+      sub { "WebService-Pinterest-perl/$WebService::Pinterest::VERSION" },
 );
 
 # Context
