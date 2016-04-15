@@ -484,8 +484,8 @@ sub find_endpoint {
     return $COMPILED_ENDPOINTS->{$k};
 }
 
-# $endpoint = $api->find_resource($method, $resource);
-sub find_resource {
+# $endpoint = $api->resolve_resource($method, $resource);
+sub resolve_resource {
     my ( $self, $method, $resource ) = @_;
     my $k = join( ' ', $method, $resource );
     return $RESOURCE_MAP->{$k};

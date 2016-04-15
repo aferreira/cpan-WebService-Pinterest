@@ -214,7 +214,7 @@ sub fetch {
     my $self     = shift;
     my $resource = shift;
 
-    my $endpoint = $self->find_resource( GET => $resource );
+    my $endpoint = $self->resolve_resource( GET => $resource );
     unless ($endpoint) {
         croak "Can't find resource '$resource' to fetch\n";    # FIXME throw
     }
@@ -225,7 +225,7 @@ sub create {
     my $self     = shift;
     my $resource = shift;
 
-    my $endpoint = $self->find_resource( POST => $resource );
+    my $endpoint = $self->resolve_resource( POST => $resource );
     unless ($endpoint) {
         croak "Can't find resource '$resource' to create\n";    # FIXME throw
     }
@@ -236,7 +236,7 @@ sub edit {
     my $self     = shift;
     my $resource = shift;
 
-    my $endpoint = $self->find_resource( PATCH => $resource );
+    my $endpoint = $self->resolve_resource( PATCH => $resource );
     unless ($endpoint) {
         croak "Can't find resource '$resource' to edit\n";      # FIXME throw
     }
@@ -247,7 +247,7 @@ sub delete {
     my $self     = shift;
     my $resource = shift;
 
-    my $endpoint = $self->find_resource( DELETE => $resource );
+    my $endpoint = $self->resolve_resource( DELETE => $resource );
     unless ($endpoint) {
         croak "Can't find resource '$resource' to delete\n";    # FIXME throw
     }
