@@ -73,40 +73,9 @@ sub last_ua_request {
 # $req = $self->_build_request($method, $endpoint, \%params);
 # $req = $self->_build_request($method, $endpoint, \%params, \%opts);
 sub _build_request {
-    my $self     = shift;
-    my $method   = shift;
-    my $endpoint = shift;
+    my $self = shift;
 
-    my ( $params, $opts );
-    if ( ref $_[0] eq 'HASH' ) {    # \%params
-        $params = shift;
-        if (@_) {                   # \%opts
-            die "Invalid usage" unless ref $_[0] eq 'HASH';
-            $opts = shift;
-        }
-    }
-    elsif ( @_ % 2 == 0 ) {         # %params
-        $params = {@_};
-    }
-    else {
-        die "Invalid usage";
-    }
-    ## FIXME explain better "Invalid usage" errors
-
-    # TODO check: $method is one of GET, POST, PATCH, DELETE
-    # TODO check: $endpoint looks like relative or absolute file path
-
-    unless ( $endpoint =~ m{^/} ) {
-        $endpoint = '/v1/' . $endpoint;
-    }
-
-    if ( $self->has_access_token ) {
-        $params = { access_token => $self->access_token, %$params };
-    }
-
-    # Validate params
-    my ( $path, $query, $form_data ) =
-      $self->validate_endpoint_params( $method, $endpoint, $params, $opts );
+    my ( $method, $path, $query, $form_data ) = $self->validate_call(@_);
 
     my $uri = URI->new;
     $uri->scheme( $self->api_scheme );

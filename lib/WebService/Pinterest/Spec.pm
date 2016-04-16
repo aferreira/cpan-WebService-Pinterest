@@ -477,6 +477,53 @@ sub _compile_endpoints {
 
 our ( $COMPILED_ENDPOINTS, $RESOURCE_MAP ) = _compile_endpoints();
 
+my $RE_METHOD = qr/^(GET|POST|PATCH|DELETE)$/; # one of GET, POST, PATCH, DELETE
+my $RE_ENDPOINT = qr{^ /? (?: :? [a-zA-Z0-9]+ / )* :? [a-zA-Z0-9]+ /? $}x;
+
+# ($method, $endpoint, $query, $form_data) = $self->_validate_call($method, $endpoint, %params);
+# ($method, $endpoint, $query, $form_data) = $self->_validate_call($method, $endpoint, \%params);
+# ($method, $endpoint, $query, $form_data) = $self->_validate_call($method, $endpoint, \%params, \%opts);
+#
+# $method is one of GET, POST, PATCH, DELETE
+# $endpoint looks like a relative or absolute Unix file path
+#
+sub validate_call {
+    my $self = shift;
+
+    if ( @_ > 2 && !ref $_[2] && defined $_[2] ) {    # %params
+        croak "Invalid usage 1"
+          unless @_ % 2 == 0;    # FIXME throw, explain better
+        my @params = splice( @_, 2 );
+        push @_, {@params};
+    }
+
+    my ( $method, $endpoint, $params, $opts ) = validate_with(
+        params => [@_],
+        spec   => [
+            { type => SCALAR,  regex   => $RE_METHOD },
+            { type => SCALAR,  regex   => $RE_ENDPOINT },
+            { type => HASHREF, default => {} },
+            { type => HASHREF, default => {} },
+        ],
+        on_fail => sub { croak "Invalid usage" },  # FIXME throw, explain better
+    );
+
+    # From relative to absolute
+    unless ( $endpoint =~ m{^/} ) {
+        $endpoint = '/v1/' . $endpoint;
+    }
+
+    if ( $self->has_access_token ) {
+        $params = { access_token => $self->access_token, %$params };
+    }
+
+    # Validate params
+    my ( $path, $query, @more ) =
+      $self->validate_endpoint_params( $method, $endpoint, $params, $opts );
+
+    return ( $method, $path, $query, @more );
+}
+
 # $compiled = $api->find_endpoint($method, $endpoint);
 sub find_endpoint {
     my ( $self, $method, $endpoint ) = @_;
