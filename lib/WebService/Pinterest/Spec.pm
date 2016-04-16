@@ -60,13 +60,13 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
-        ## TODO cursor, maybe type => 'std+cursor' or '+cursor'
+        type     => '+cursor',
         resource => [ 'me/likes', 'my/likes' ],
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
         object   => 'pin',
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/pins', 'my/pins' ],
     },
 
@@ -87,7 +87,7 @@ my @ENDPOINTS = (
         parameters => {
             query => { spec => 'any' },
         },
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/search/boards', 'search/my/boards' ],
     },
     {
@@ -96,7 +96,7 @@ my @ENDPOINTS = (
         parameters => {
             query => { spec => 'any' },
         },
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/search/pins', 'search/my/pins' ],
     },
 
@@ -122,19 +122,19 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/followers/' ],
         object   => 'user',
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/followers', 'my/followers' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/boards/' ],
         object   => 'board',
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/following/boards', 'my/following/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/interests/' ],
         object   => 'interest',
-        ## TODO cursor
+        type     => '+cursor',
         resource => [
             'me/following/interests', 'my/following/interests', 'my/interests'
         ],
@@ -142,7 +142,7 @@ my @ENDPOINTS = (
     {
         endpoint => [ GET => '/v1/me/following/users/' ],
         object   => 'user',
-        ## TODO cursor
+        type     => '+cursor',
         resource => [ 'me/following/users', 'my/following/users' ],
     },
 
@@ -304,7 +304,9 @@ my %PREDICATE_FOR = (
     'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
     'pinterest:permission-list' => \&is_pinterest_permission_list,
-    'upload'                    => sub {
+    'pinterest:limit' =>
+      sub { my $n = shift(); $n =~ qr/^[0-9]+$/ && $n <= 100 },
+    'upload' => sub {
         UNIVERSAL::isa( $_[0], 'WebService::Pinterest::Upload' )
           && $_[0]->is_valid();
     },
@@ -314,6 +316,7 @@ $PREDICATE_FOR{'pinterest:access-token'} = $PREDICATE_FOR{'any'};
 $PREDICATE_FOR{'pinterest:user-fields'}  = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:board-fields'} = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:pin-fields'}   = $PREDICATE_FOR{'any'};    # FIXME
+$PREDICATE_FOR{'pinterest:cursor'}       = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:interest-fields'} =
   $PREDICATE_FOR{'any'};    # FIXME at least id,name
 
@@ -345,8 +348,8 @@ sub _compile_spec {
                 }
             );
         };
-        my $t = $PARAM_VALIDATE_TYPE_FOR{$s} // SCALAR;
-        $specs{$k} = { %$v, type => $t, callbacks => { check => $cb } };
+        my $pv_type = $PARAM_VALIDATE_TYPE_FOR{$s} // SCALAR;
+        $specs{$k} = { %$v, type => $pv_type, callbacks => { check => $cb } };
     }
     return \%specs;
 }
@@ -431,15 +434,25 @@ sub _compile_endpoints {
 
         die "Error: endpoint '$k' redefined\n" if exists $endpoint_map->{$k};
 
-        $ep->{type} //=
-          'std';    # default endpoint type (includes 'access_token' + 'fields')
-        if ( $ep->{type} eq 'std' ) {
+        $ep->{type} //= 'std';              # default endpoint type
+        $ep->{type} = 'std' . $ep->{type} if $ep->{type} =~ /^\+/;
+        my $t = { map { $_ => 1 } split( '\+', $ep->{type} ) };
+        if ( $t->{std} ) {
 
             # add access_token & fields
             my $object = $ep->{object};
             $params->{access_token} //= { spec => 'access-token' };
             $params->{fields} //= { spec => "$object-fields", optional => 1 }
               if $object;
+        }
+        if ( $t->{cursor} ) {
+            my $m = $ep->{endpoint}[0];
+            die "Error: endpoint '$k' can't have 'cursor' type (not GET)\n"
+              unless $m eq 'GET';
+
+            # add limit & cursor
+            $params->{limit}  //= { spec => 'limit',  optional => 1, };
+            $params->{cursor} //= { spec => 'cursor', optional => 1 };
         }
 
         my $path = $endpoint->[1];
