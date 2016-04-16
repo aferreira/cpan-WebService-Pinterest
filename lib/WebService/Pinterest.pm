@@ -118,7 +118,7 @@ sub _build_request {
         return HTTP::Request::Common::POST(
             $uri,
             'Content-Type' => 'multipart/form-data',
-            Content        => $form_data
+            'Content'      => $form_data
         );
     }
     else {
