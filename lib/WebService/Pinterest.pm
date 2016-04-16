@@ -11,6 +11,7 @@ with 'WebService::Pinterest::Spec';
 with 'WebService::Pinterest::Common';
 
 use WebService::Pinterest::Upload;
+use WebService::Pinterest::Pager;
 
 use HTTP::Request;
 use HTTP::Request::Common ();
@@ -108,6 +109,11 @@ sub upload {
 sub call {
     my $self = shift;
     my $req  = $self->_build_request(@_);
+    return $self->_call($req);
+}
+
+sub _call {
+    my ( $self, $req ) = @_;
 
     # TODO catch exception, convert to error response
 
@@ -221,6 +227,23 @@ sub delete {
         croak "Can't find resource '$resource' to delete\n";    # FIXME throw
     }
     return $self->call( @$endpoint, @_ );
+}
+
+# $iterator = $api->fetch_paged($resource, ...);
+sub fetch_paged {
+    my $self     = shift;
+    my $resource = shift;
+
+    my $endpoint = $self->resolve_resource( GET => $resource );
+    unless ($endpoint) {
+        croak "Can't find resource '$resource' to fetch\n";     # FIXME throw
+    }
+    return $self->pager( @$endpoint, @_ );
+}
+
+sub pager {
+    my $self = shift();
+    return WebService::Pinterest::Pager->new( api => $self, call => [@_] );
 }
 
 1;

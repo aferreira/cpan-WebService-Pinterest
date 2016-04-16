@@ -40,4 +40,13 @@ WebService::Pinterest - Pinterest API client
         code       => $code,
     );
 
+=head2 PAGINATION
+
+See https://developers.pinterest.com/docs/api/overview/#pagination
+
+
+    $it = $api->paged_fetch('board/pins', board => $board, limit => 50);
+    while ($res = $it->next) {
+        ...
+    }
 
