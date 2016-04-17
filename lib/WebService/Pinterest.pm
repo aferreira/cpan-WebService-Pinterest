@@ -229,7 +229,7 @@ sub delete {
     return $self->call( @$endpoint, @_ );
 }
 
-# $iterator = $api->fetch_paged($resource, ...);
+# $pager = $api->fetch_paged($resource, ...);
 sub fetch_paged {
     my $self     = shift;
     my $resource = shift;
@@ -243,6 +243,7 @@ sub fetch_paged {
 
 sub pager {
     my $self = shift();
+    # FIXME check: is the endpoint 'cursor' type?
     return WebService::Pinterest::Pager->new( api => $self, call => [@_] );
 }
 
