@@ -168,7 +168,7 @@ sub authorization_url {
     return $req->uri->as_string;
 }
 
-#    $res = $pinner->get_access_token(
+#    $res = $api->get_access_token(
 #        grant_type => 'authorization_code',
 #        code       => $code,
 #    );

@@ -8,13 +8,13 @@ WebService::Pinterest - Pinterest API client
 
     use WebService::Pinterest;
 
-    $pinner = WebService::Pinterest->new( access_token => $access_token );
+    $pinterest = WebService::Pinterest->new( access_token => $access_token );
 
-    $r1 = $pinner->fetch('me/pins');
-    $r2 = $pinner->fetch( '/user/pins', user => $user_id );
+    $r1 = $pinterest->fetch('me/pins');
+    $r2 = $pinterest->fetch( '/user/pins', user => $user_id );
 
-    $r3 = $pinner->create( 'me/board', board => 'nobody/board' );
-    $r4 = $pinner->create(
+    $r3 = $pinterest->create( 'me/board', board => 'nobody/board' );
+    $r4 = $pinterest->create(
         'me/pin',
         board     => 'nobody/board',
         note      => '',
@@ -22,20 +22,20 @@ WebService::Pinterest - Pinterest API client
         link      => '',
     );
 
-    $r5 = $pinner->edit( 'me/pin', pin => 9999999, note => 'xxx', link => 'http://' );
+    $r5 = $pinterest->edit( 'me/pin', pin => 9999999, note => 'xxx', link => 'http://' );
 
-    $pinner = WebService::Pinterest->new(
+    $pinterest = WebService::Pinterest->new(
         app_id     => $client_id,
         app_secret => $secret
     );
-    $url = $pinner->authorization_url(
+    $url = $pinterest->authorization_url(
         response_type => 'code',
         state         => $state,
         scope         => 'read_public',
         redirect_uri  => 'https://my.app.com/connect/pinterest',
     );
 
-    $res = $pinner->get_access_token(
+    $res = $pinterest->get_access_token(
         grant_type => 'authorization_code',
         code       => $code,
     );
