@@ -98,7 +98,7 @@ sub _build_request {
 
 # $req = $api->_build_next_request($url);
 sub _build_next_request {
-    my ($self, $url) = @_;
+    my ( $self, $url ) = @_;
     return HTTP::Request->new( GET => $url );
 }
 
