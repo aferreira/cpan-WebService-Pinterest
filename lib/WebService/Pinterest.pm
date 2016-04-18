@@ -190,6 +190,23 @@ sub get_access_token {
     );
 }
 
+sub inspect_token {
+    my $self = shift;
+
+    unless ( $self->has_app_id && $self->has_access_token ) {
+        croak "Attributes app_id & access_token must be set";    # FIXME throw
+    }
+
+    return $self->call(
+        GET => '/v1/oauth/inspect',
+        {
+            client_id    => $self->app_id,
+            access_token => $self->access_token,
+            @_,
+        },
+    );
+}
+
 # $res = $api->fetch($resource, %args);
 sub fetch {
     my $self     = shift;

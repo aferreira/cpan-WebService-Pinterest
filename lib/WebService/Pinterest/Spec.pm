@@ -38,7 +38,15 @@ our @ENDPOINT_SPECS = (
             code          => { spec => 'any' },
         },
     },
-    ## TODO oauth/inspect
+    {
+        type       => 'plain',
+        endpoint   => [ GET => '/v1/oauth/inspect' ],
+        parameters => {
+            client_id    => { spec => 'client-id' },
+            access_token => { spec => 'access-token' },
+
+        },
+    },
 
     # Users
     # https://developers.pinterest.com/docs/api/users/#fetch-user-data
