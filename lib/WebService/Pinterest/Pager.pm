@@ -53,7 +53,7 @@ sub next {
     if ( exists $res->{page} ) {
         if ( defined $res->{page}{next} ) {
             my $next_url = $res->{page}{next};
-            my $next_req = HTTP::Request->new( GET => $next_url );    # FIXME
+            my $next_req = self->api->_build_next_request($next_url);
             $self->next_request($next_req);
         }
         elsif ( exists $res->{data} && scalar @{ $res->{data} } == 0 )

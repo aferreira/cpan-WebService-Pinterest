@@ -96,6 +96,12 @@ sub _build_request {
     }
 }
 
+# $req = $api->_build_next_request($url);
+sub _build_next_request {
+    my ($self, $url) = @_;
+    return HTTP::Request->new( GET => $url );
+}
+
 # $upload = $api->upload($file);
 # $upload = $api->upload($file, $filename);
 sub upload {
@@ -243,6 +249,7 @@ sub fetch_paged {
 
 sub pager {
     my $self = shift();
+
     # FIXME check: is the endpoint 'cursor' type?
     return WebService::Pinterest::Pager->new( api => $self, call => [@_] );
 }
