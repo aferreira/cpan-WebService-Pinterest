@@ -15,7 +15,7 @@ use WebService::Pinterest::X;
 
 use namespace::autoclean;
 
-my @ENDPOINTS = (
+our @ENDPOINT_SPECS = (
     {
         type       => 'plain',
         endpoint   => [ GET => '/oauth' ],
@@ -425,7 +425,7 @@ sub _compile_endpoints {
 
     my $endpoint_map;
     my $resource_map;
-    for my $ep (@ENDPOINTS) {
+    for my $ep (@ENDPOINT_SPECS) {
         my $endpoint = $ep->{endpoint};
         my $params = $ep->{parameters} // {};
 
