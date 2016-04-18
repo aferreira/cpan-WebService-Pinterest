@@ -50,24 +50,24 @@ our @ENDPOINT_SPECS = (
     {
         endpoint => [ GET => '/v1/me/boards/' ],
         object   => 'board',
-        resource => [ 'me/boards', 'my/boards' ],
+        resource => [ 'my/boards', 'me/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/boards/suggested/' ],
         object   => 'board',
-        resource => [ 'me/boards/suggested', 'my/suggested/boards' ],
+        resource => [ 'my/suggested/boards', 'me/boards/suggested' ],
     },
     {
         endpoint => [ GET => '/v1/me/likes/' ],
         object   => 'pin',
         type     => '+cursor',
-        resource => [ 'me/likes', 'my/likes' ],
+        resource => [ 'my/likes', 'me/likes' ],
     },
     {
         endpoint => [ GET => '/v1/me/pins/' ],
         object   => 'pin',
         type     => '+cursor',
-        resource => [ 'me/pins', 'my/pins' ],
+        resource => [ 'my/pins', 'me/pins' ],
     },
 
     # hinted at https://developers.pinterest.com/docs/api/overview/#user-errors
@@ -88,7 +88,7 @@ our @ENDPOINT_SPECS = (
             query => { spec => 'any' },
         },
         type     => '+cursor',
-        resource => [ 'me/search/boards', 'search/my/boards' ],
+        resource => [ 'search/my/boards', 'me/search/boards' ],
     },
     {
         endpoint   => [ GET => '/v1/me/search/pins/' ],
@@ -97,7 +97,7 @@ our @ENDPOINT_SPECS = (
             query => { spec => 'any' },
         },
         type     => '+cursor',
-        resource => [ 'me/search/pins', 'search/my/pins' ],
+        resource => [ 'search/my/pins', 'me/search/pins' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#create-follow-data
@@ -107,7 +107,7 @@ our @ENDPOINT_SPECS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
-        resource => [ 'me/following/boards', 'my/following/boards' ],
+        resource => [ 'my/following/board', 'me/following/board' ],
     },
     {
         endpoint   => [ POST => '/v1/me/following/users/' ],
@@ -115,7 +115,7 @@ our @ENDPOINT_SPECS = (
         parameters => {
             user => { spec => 'user-uid' },
         },
-        resource => [ 'me/following/users', 'my/following/users' ],
+        resource => [ 'my/following/user', 'me/following/user' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#fetch-follow-data
@@ -123,27 +123,27 @@ our @ENDPOINT_SPECS = (
         endpoint => [ GET => '/v1/me/followers/' ],
         object   => 'user',
         type     => '+cursor',
-        resource => [ 'me/followers', 'my/followers' ],
+        resource => [ 'my/followers', 'me/followers' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/boards/' ],
         object   => 'board',
         type     => '+cursor',
-        resource => [ 'me/following/boards', 'my/following/boards' ],
+        resource => [ 'my/following/boards', 'me/following/boards' ],
     },
     {
         endpoint => [ GET => '/v1/me/following/interests/' ],
         object   => 'interest',
         type     => '+cursor',
         resource => [
-            'me/following/interests', 'my/following/interests', 'my/interests'
+            'my/following/interests', 'me/following/interests', 'my/interests'
         ],
     },
     {
         endpoint => [ GET => '/v1/me/following/users/' ],
         object   => 'user',
         type     => '+cursor',
-        resource => [ 'me/following/users', 'my/following/users' ],
+        resource => [ 'my/following/users', 'me/following/users' ],
     },
 
     # https://developers.pinterest.com/docs/api/users/#remove-follow-data
@@ -153,7 +153,7 @@ our @ENDPOINT_SPECS = (
         parameters => {
             board => { spec => 'board-uid' },
         },
-        resource => [ 'me/following/board', 'my/following/board' ],
+        resource => [ 'my/following/board', 'me/following/board' ],
     },
     {
         endpoint   => [ DELETE => '/v1/me/following/users/:user/' ],
@@ -161,7 +161,7 @@ our @ENDPOINT_SPECS = (
         parameters => {
             user => { spec => 'user-uid' },
         },
-        resource => [ 'me/following/user', 'my/following/user' ],
+        resource => [ 'my/following/user', 'me/following/user' ],
     },
 
     # https://developers.pinterest.com/docs/api/boards/#create-boards
