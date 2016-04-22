@@ -9,6 +9,7 @@ use Moose::Role;
 use Carp qw(carp croak);
 use Params::Validate qw(:all);
 use Data::Validate::URI qw(is_web_uri is_https_uri);
+use Regexp::Common qw(list balanced);
 use List::MoreUtils qw(all none);
 
 use WebService::Pinterest::X;
@@ -298,6 +299,40 @@ sub is_pinterest_grant_type {
     return 0;
 }
 
+my %FIELDS_FOR = (
+    'user' => [
+        'id',  'username',   'first_name', 'last_name',
+        'bio', 'created_at', 'counts',     'image',
+    ],
+    'board' => [
+        'id',      'name',       'url',    'description',
+        'creator', 'created_at', 'counts', 'image',
+    ],
+    'pin' => [
+        'id',     'link',       'url',         'creator',
+        'board',  'created_at', 'note',        'color',
+        'counts', 'media',      'attribution', 'image',
+        'metadata',
+    ],
+    'interest' => [ 'id', 'name' ],
+);
+
+# $predicate_sub = make_pinterest_fields_validator($object);
+sub make_pinterest_fields_validator {
+    my $object = shift;
+    my $fields = $FIELDS_FOR{$object}
+      or croak "Can't find fields for '$object'";
+    my %field_map = map { $_ => 1 } @$fields;
+
+    my $re_oneof  = '(?:' . join( '|', map quotemeta, @$fields ) . ')';
+    my $re_field  = "$re_oneof$RE{balanced}";
+    my $re_fields = qr/$RE{list}{-pat => $re_field}/;
+
+    return sub {
+        shift() =~ $re_fields;
+    };
+}
+
 # spec x predicate
 my %PREDICATE_FOR = (
 
@@ -311,6 +346,10 @@ my %PREDICATE_FOR = (
     'pinterest:user-uid'      => sub { shift() =~ qr/^[a-zA-Z0-9]+$/ },
     'pinterest:board-uid' =>
       sub { shift() =~ qr{^[a-z0-9]+/[a-z0-9\-]+$|^[0-9]+$} },
+    'pinterest:user-fields'     => make_pinterest_fields_validator('user'),
+    'pinterest:board-fields'    => make_pinterest_fields_validator('board'),
+    'pinterest:pin-fields'      => make_pinterest_fields_validator('pin'),
+    'pinterest:interest-fields' => make_pinterest_fields_validator('interest'),
     'pinterest:permission-list' => \&is_pinterest_permission_list,
     'pinterest:limit' =>
       sub { my $n = shift(); $n =~ qr/^[0-9]+$/ && $n <= 100 },
@@ -321,12 +360,7 @@ my %PREDICATE_FOR = (
 
 );
 $PREDICATE_FOR{'pinterest:access-token'} = $PREDICATE_FOR{'any'};
-$PREDICATE_FOR{'pinterest:user-fields'}  = $PREDICATE_FOR{'any'};    # FIXME
-$PREDICATE_FOR{'pinterest:board-fields'} = $PREDICATE_FOR{'any'};    # FIXME
-$PREDICATE_FOR{'pinterest:pin-fields'}   = $PREDICATE_FOR{'any'};    # FIXME
 $PREDICATE_FOR{'pinterest:cursor'}       = $PREDICATE_FOR{'any'};    # FIXME
-$PREDICATE_FOR{'pinterest:interest-fields'} =
-  $PREDICATE_FOR{'any'};    # FIXME at least id,name
 
 my %ALLOWED_METHODS_FOR = ( 'upload' => ['POST'], );
 
