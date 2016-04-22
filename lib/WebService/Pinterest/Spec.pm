@@ -570,13 +570,17 @@ sub validate_endpoint_params {
         return $params;
     }
 
+    my @pv_more;
+    push @pv_more, ( on_fail => sub { } ) if $opts->{skip_validate};
+    push @pv_more, ( allow_extra => 1 ) if $opts->{allow_extra};
+
     my $checked = validate_with(
         params => [%$params],
         spec   => $compiled->{spec},
 
         #normalize
         #called
-        allow_extra => $opts->{allow_extra},
+        @pv_more,
     );
 
     my $path;
