@@ -609,7 +609,7 @@ sub validate_endpoint_params {
     push @pv_more, ( allow_extra => 1 ) if $opts->{allow_extra};
 
     my $checked = validate_with(
-        params => [%$params],
+        params => $params,
         spec   => $compiled->{spec},
 
         #normalize
@@ -624,24 +624,22 @@ sub validate_endpoint_params {
     else {
         my ( $tpl, $places, $argns ) =
           @{ $compiled->{path_tpl} }{qw(tpl places argns)};
-        $path = sprintf( $tpl, @{$params}{@$places} );
-        delete @{$params}{@$argns};
+        $path = sprintf( $tpl, @{$checked}{@$places} );
+        delete @{$checked}{@$argns};
     }
-
-    # FIXME $params is changed
 
     my @more;
     if (
         my @uploads =
-        map { $_ => ( delete $params->{$_} )->lwp_file_spec } grep {
-            UNIVERSAL::isa( $params->{$_}, 'WebService::Pinterest::Upload' )
-        } keys %$params
+        map { $_ => ( delete $checked->{$_} )->lwp_file_spec } grep {
+            UNIVERSAL::isa( $checked->{$_}, 'WebService::Pinterest::Upload' )
+        } keys %$checked
       )
     {
         @more = \@uploads;
     }
 
-    return ( $path, $params, @more );
+    return ( $path, $checked, @more );
 }
 
 1;
