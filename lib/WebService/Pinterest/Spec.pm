@@ -601,7 +601,7 @@ sub validate_endpoint_params {
     my $compiled = $self->find_endpoint( $method, $endpoint );
     unless ($compiled) {
         carp "Could not find spec for '$method $endpoint'";
-        return $params;
+        return $endpoint, $params;
     }
 
     my @pv_more;
