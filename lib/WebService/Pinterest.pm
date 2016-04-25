@@ -133,14 +133,35 @@ sub _call {
         my $json = $res->decoded_content;
         $r = eval { decode_json($json) };
         if ( my $err = $@ ) {
-            $r = { error => 'bad_json', message => $err, json => $json };
+            $r = { _error => 'bad_json', _message => $err, json => $json };
         }
     }
-    $r //= { error => 'not_json', content_type => $res->content_type };
-    $r->{_code}        = $res->code;
+    $r //= { _error => 'not_json', _content_type => $res->content_type };
     $r->{_http_status} = $res->status_line;
+    $r->{_status}      = _status_group( $res->code );
 
     return $r;
+}
+
+sub _status_group {
+    if ( $_[0] >= 200 && $_[0] < 300 ) {
+        return 'success';
+    }
+    elsif ( $_[0] >= 400 && $_[0] < 500 ) {
+        return 'error,client_error';
+    }
+    elsif ( $_[0] >= 500 && $_[0] < 600 ) {
+        return 'error,server_error';
+    }
+    elsif ( $_[0] >= 300 && $_[0] < 400 ) {
+        return 'redirect';
+    }
+    elsif ( $_[0] >= 100 && $_[0] < 200 ) {
+        return 'info';
+    }
+    else {
+        return 'unknown';
+    }
 }
 
 # $url = $api->authorization_url(
