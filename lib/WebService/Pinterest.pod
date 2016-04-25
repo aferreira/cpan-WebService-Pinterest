@@ -1,4 +1,6 @@
 
+=cut
+
 =head1 NAME
 
 WebService::Pinterest - Pinterest API client
@@ -45,11 +47,43 @@ of the official Pinterest API capabilities from a Perl program.
 
 ENDPOINTS
 
+Pinterest API endpoints are tuples with HTTP method and endpoint path.
+
+The HTTP methods for the current API endpoints are:
+
+    GET
+    POST
+    PATCH
+    DELETE
+
+Examples of current endpoints (methods and paths) are:
+
+    GET   /v1/me/
+    GET   /v1/me/likes/
+    GET   /v1/users/:user
+    POST  /v1/boards/
+    GET   /v1/boards/:board/pins/
+    PATCH /v1/boards/:board/
+
+
+
+
 RESOURCES
 
 PARAMETERS
 
 CALL OPTIONS
+
+SUPPORTED ENDPOINTS
+
+    GET /v1/me/
+
+    Resources: me
+
+    Parameters
+       fields
+
+    Methods: fetch_me
 
 =end TODO
 
