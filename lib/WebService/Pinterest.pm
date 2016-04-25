@@ -37,6 +37,8 @@ has access_token => (
     clearer   => 'clear_access_token',
 );
 
+has trace_calls => ( is => 'rw', );
+
 has api_host => (
     is      => 'ro',
     default => 'api.pinterest.com'
@@ -126,6 +128,11 @@ sub _call {
     my $ua  = $self->ua;
     my $res = $ua->request($req);
     $self->last_ua_response($res);
+
+    if ( $self->trace_calls ) {
+        $req->dump( prefix => '< ', maxlength => 0 );
+        $res->dump( prefix => '> ', maxlength => 0 );
+    }
 
     # Decode JSON content
     my $r;
