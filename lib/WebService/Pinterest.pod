@@ -5,16 +5,16 @@ WebService::Pinterest - Pinterest API client
 
 =head1 SYNOPSIS
 
-
     use WebService::Pinterest;
 
     $pinterest = WebService::Pinterest->new( access_token => $access_token );
 
-    $r1 = $pinterest->fetch('me/pins');
-    $r2 = $pinterest->fetch( '/user/pins', user => $user_id );
+    $r1 = $pinterest->fetch('me');
+    $r2 = $pinterest->fetch('my/pins');
+    $r3 = $pinterest->fetch('user/pins', user => $user_id);
 
-    $r3 = $pinterest->create( 'me/board', board => 'nobody/board' );
-    $r4 = $pinterest->create(
+    $r4 = $pinterest->create('board', board => 'nobody/board');
+    $r5 = $pinterest->create(
         'me/pin',
         board     => 'nobody/board',
         note      => '',
@@ -22,31 +22,206 @@ WebService::Pinterest - Pinterest API client
         link      => '',
     );
 
-    $r5 = $pinterest->edit( 'me/pin', pin => 9999999, note => 'xxx', link => 'http://' );
+    $r6 = $pinterest->edit( 'my/pin', pin => 9999999, note => 'xxx', link => 'http://' );
 
-    $pinterest = WebService::Pinterest->new(
-        app_id     => $client_id,
-        app_secret => $secret
-    );
+
+=head1 DESCRIPTION
+
+This module implements a client for the Pinterest API documented at:
+
+    https://developers.pinterest.com/docs/
+
+I<This code is in alpha state. Its interface may change
+in the next releases.>
+
+L<Pinterest|https://www.pinterest.com/> offers a RESTful API
+that gives access to user's Pinterest data, like their boards, pins,
+followers and more.
+
+L<WebService::Pinterest> gives you an easy way to access most
+of the official Pinterest API capabilities from a Perl program.
+
+=begin TODO
+
+ENDPOINTS
+
+RESOURCES
+
+PARAMETERS
+
+CALL OPTIONS
+
+=end TODO
+
+
+=head1 METHODS
+
+=over 4
+
+=item B<new>
+
+    $pinterest = WebService::Pinterest->new(%args);
+
+Constructor. Accepts the arguments:
+
+    access_token - most API calls require only this
+
+    api_id - for authorization calls
+
+    api_secret - needed for authorization_url()
+
+    trace_calls - to enable tracing HTTP request and responses to / from Pinterest
+
+=item B<call>
+
+    $response = $pinterest->call($method, $endpoint, \%params);
+    $response = $pinterest->call($method, $endpoint, \%params, \%opts);
+    $response = $pinterest->call($method, $endpoint, %params);
+
+See L</CALL OPTIONS> for C<%opts>.
+
+=item B<authorization_url>
+
     $url = $pinterest->authorization_url(
         response_type => 'code',
         state         => $state,
-        scope         => 'read_public',
+        scope         => 'read_public,write_public',
         redirect_uri  => 'https://my.app.com/connect/pinterest',
     );
 
-    $res = $pinterest->get_access_token(
-        grant_type => 'authorization_code',
-        code       => $code,
+Builds an authorization URL to request authorization from
+a user to read or change the Pinterest data in their account.
+
+See https://developers.pinterest.com/docs/api/overview/#getting-your-authorization-code
+
+Requires C<app_id> and C<app_secret> attributes,
+besides C<response_type>, C<scope>, C<redirect_uri> parameters.
+
+C<state> is optional but recommended, since this can
+be used to make sure that redirect back to your site
+or app wasn't spoofed.
+
+C<scope> is a comma-separated list of
+C<Pinterest permission scopes|https://developers.pinterest.com/docs/api/overview/#permission-scopes>.
+
+C<redirect_uri> is the URI which the user will be redirected to
+after they authorize (or choose not to authorize) your app.
+This URI B<must> be added to the list of redirect URIs in
+your L<Pinterest app configuration|https://developers.pinterest.com/apps/>.
+
+It is probably a good practice to keep track of the app user
+via the authorization state. If successful, Pinterest will
+generate a request to your app with the authorization state
+and an authorization code. The authorization code (which stands
+for temporary credentials) should then be exchanged by an access token
+(an may be obtained with a C<get_access_token()> call.
+The access code in turn works as a permanent credential
+(until the user revokes app access).
+
+=item B<get_access_token>
+
+    $response = $pinterest->get_access_token(
+         grant_type => 'authorization_code',
+         code       => $code,
     );
+
+Retrieves the I<access token> corresponding to the authorization code
+obtained from an app user. This access token will then be used
+for the app to access Pinterest data on user's behalf.
+
+Requires C<app_id> and C<app_secret> attributes,
+besides C<grant_type> and C<code> parameters.
+
+=item B<resolve_resource>
+
+    $method_endpoint = $pinterest->resolve_resource($method, $resource);
+
+Returns an arrayref with the actual HTTP method
+and endpoint path for a Pinterest API call.
+
+=item B<fetch>
+
+    $response = $pinterest->fetch($resource, %params);
+    $response = $pinterest->fetch($resource, \%params);
+    $response = $pinterest->fetch($resource, \%params, \%opts);
+
+Resolves C<< GET => $resource >> and, if successful,
+does a Pinterest API call to the resulting endpoint.
+
+On failure, it croaks.
+
+=item B<create>
+
+    $response = $pinterest->create($resource, %params);
+    $response = $pinterest->create($resource, \%params);
+    $response = $pinterest->create($resource, \%params, \%opts);
+
+Resolves C<< POST => $resource >> and, if successful,
+does a Pinterest API call to the resulting endpoint.
+
+On failure, it croaks.
+
+=item B<edit>
+
+    $response = $pinterest->edit($resource, %params);
+    $response = $pinterest->edit($resource, \%params);
+    $response = $pinterest->edit($resource, \%params, \%opts);
+
+Resolves C<< PATCH => $resource >> and, if successful,
+does a Pinterest API call to the resulting endpoint.
+
+On failure, it croaks.
+
+=item B<delete>
+
+    $response = $pinterest->delete($resource, %params);
+    $response = $pinterest->delete($resource, \%params);
+    $response = $pinterest->delete($resource, \%params, \%opts);
+
+Resolves C<< DELETE => $resource >> and, if successful,
+does a Pinterest API call to the resulting endpoint.
+
+On failure, it croaks.
+
+=item B<fetch_paged>
+
+    $pager = $pinterest->fetch_paged($resource, %params);
+    $pager = $pinterest->fetch_paged($resource, \%params);
+    $pager = $pinterest->fetch_paged($resource, \%params, \%opts);
+
+Resolves C<< GET => $resource >> to a Pinterest API endpoint
+which supports paging. If successful, creates a pager
+object to iterate through the resulting response pages.
+
+On failure, it croaks.
+
+See L</PAGINATION>.
+
+
+=back
+
+=head1 HELPER METHODS
+
+=over 4
+
+=item B<upload>
+
+=item B<pager>
+
+=back
+
+=head1 SPECIAL TRICKS
+
+=head2 IMAGE UPLOADS
+
 
 =head2 PAGINATION
 
 See https://developers.pinterest.com/docs/api/overview/#pagination
 
 
-    $it = $api->paged_fetch('board/pins', board => $board, limit => 50);
-    while ($res = $it->next) {
+    $pager = $api->fetch_paged('board/pins', board => $board, limit => 50);
+    while ($res = $pager->next) {
         ...
     }
 
