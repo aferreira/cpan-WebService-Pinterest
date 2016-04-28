@@ -63,7 +63,7 @@ For details on the parameters for each call, take a look at
 {{#endpoint}}
 =item C<{{http_method}} {{endpoint_path}}>
 
-    Resource: {{#resources}}{{.}} {{/resources}}
+    Resource:{{#resources}} {{.}}{{/resources}}
 
 
     Endpoint method: {{object_method}}
