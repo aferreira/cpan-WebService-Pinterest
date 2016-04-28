@@ -366,10 +366,11 @@ besides C<grant_type> and C<code> parameters.
 
 =item B<resolve_resource>
 
-    $method_endpoint = $pinterest->resolve_resource($method, $resource);
+    $endpoint = $pinterest->resolve_resource($method, $resource);
 
 Returns an arrayref with the actual HTTP method
-and endpoint path for a Pinterest API call.
+and endpoint path for a Pinterest API call,
+eg. C<['GET', '/v1/me/']>.
 
 =item B<fetch>
 
