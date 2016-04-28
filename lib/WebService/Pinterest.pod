@@ -499,3 +499,17 @@ The usage is illustrated below:
 
 See https://developers.pinterest.com/docs/api/overview/#pagination
 
+=head1 BUGS
+
+Please report bugs via Github L<https://github.com/aferreira/cpan-WebService-Pinterest/issues>.
+
+=head1 AUTHORS
+
+Adriano R. Ferreira, E<lt>ferreira@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2016 by Adriano R. Ferreira
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
