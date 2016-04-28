@@ -334,7 +334,7 @@ be used to make sure that redirect back to your site
 or app wasn't spoofed.
 
 C<scope> is a comma-separated list of
-C<Pinterest permission scopes|https://developers.pinterest.com/docs/api/overview/#permission-scopes>.
+L<Pinterest permission scopes|https://developers.pinterest.com/docs/api/overview/#permission-scopes>.
 
 C<redirect_uri> is the URI which the user will be redirected to
 after they authorize (or choose not to authorize) your app.
