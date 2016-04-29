@@ -382,7 +382,7 @@ sub _compile_spec {
         }
         my $cb = sub {
             return 1 if $p->( $_[0] );
-            WebService::Pinterest::Spec::X->throw(
+            WebService::Pinterest::X->throw(
                 {
                     key     => $k,
                     value   => $_[0],
