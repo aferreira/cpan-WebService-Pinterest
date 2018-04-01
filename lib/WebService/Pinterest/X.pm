@@ -1,13 +1,11 @@
 
 package WebService::Pinterest::X;
 
+use Jojo::Base -base;
+
 use overload '""' => \&as_string;
 
-sub new {
-    my $proto = shift;
-    my $class = ref $proto || $proto;
-    bless shift(), $class;
-}
+sub new { shift->SUPER::new(shift) }
 
 sub throw {
     die shift->new(shift);
