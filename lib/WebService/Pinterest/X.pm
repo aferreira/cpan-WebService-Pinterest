@@ -1,5 +1,5 @@
 
-package WebService::Pinterest::Spec::X;
+package WebService::Pinterest::X;
 
 use overload '""' => \&as_string;
 
