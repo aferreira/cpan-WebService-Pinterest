@@ -1,20 +1,16 @@
 
 package WebService::Pinterest::Spec;
 
-use strict;
-use warnings;
+use Jojo::Base -role;
 
-use Moose::Role;
+use zim 'Carp'                => qw(carp croak);
+use zim 'Params::Validate'    => qw(:all);
+use zim 'Data::Validate::URI' => qw(is_web_uri is_https_uri);
+use zim 'List::MoreUtils'     => qw(all none);
 
-use Carp qw(carp croak);
-use Params::Validate qw(:all);
-use Data::Validate::URI qw(is_web_uri is_https_uri);
-use Regexp::Common qw(list balanced);
-use List::MoreUtils qw(all none);
+use Regexp::Common qw(list balanced);    # XXX
 
 use WebService::Pinterest::X;
-
-use namespace::autoclean;
 
 our @ENDPOINT_SPECS = (
     {
