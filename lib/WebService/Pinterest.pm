@@ -2,10 +2,7 @@ package WebService::Pinterest;
 
 # ABSTRACT: Pinterest API client
 
-use strict;
-use warnings;
-
-use Moose;
+use Jojo::Base -base;
 
 with 'WebService::Pinterest::Spec';
 with 'WebService::Pinterest::Common';
@@ -13,59 +10,41 @@ with 'WebService::Pinterest::Common';
 use WebService::Pinterest::Upload;
 use WebService::Pinterest::Pager;
 
-use HTTP::Request;
+use HTTP::Request         ();
 use HTTP::Request::Common ();
-use LWP::UserAgent;
-use JSON::XS;
-use Carp qw(croak);
+use LWP::UserAgent        ();
 
-use namespace::autoclean;
+use zim 'Carp'     => 'croak';
+use zim 'JSON::XS' => 'decode_json';
 
-has app_id => (
-    is        => 'ro',
-    predicate => 'has_app_id',
-);
+sub app_id { $_[0]{app_id} }
 
-has app_secret => (
-    is        => 'ro',
-    predicate => 'has_app_secret',
-);
+sub has_app_id { exists $_[0]{app_id} }    # Predicate
 
-has access_token => (
-    is        => 'rw',
-    predicate => 'has_access_token',
-    clearer   => 'clear_access_token',
-);
+sub app_secret { $_[0]{app_secret} }
 
-has trace_calls => ( is => 'rw', );
+sub has_app_secret { exists $_[0]{app_secret} }    # Predicate
 
-has api_host => (
-    is      => 'ro',
-    default => 'api.pinterest.com'
-);
+sub access_token { $_[0]{access_token} }
 
-has api_scheme => (
-    is      => 'ro',
-    default => 'https',
-);
+sub has_access_token { exists $_[0]{access_token} }    # Predicate
+
+has 'trace_calls';
+
+has 'api_host' => 'api.pinterest.com';                 # ro
+
+has 'api_scheme' => 'https';                           # ro
 
 # Engine / Implementation mechanism
 
-has ua => (
-    is      => 'ro',
-    default => sub { LWP::UserAgent->new( agent => shift->ua_string ) },
-    lazy    => 1,
-);
+has 'ua' => sub { LWP::UserAgent->new( agent => shift->ua_string ) };
 
-has ua_string => (
-    is => 'ro',
-    default =>
-      sub { "WebService-Pinterest-perl/$WebService::Pinterest::VERSION" },
-);
+has 'ua_string' =>
+  sub { "WebService-Pinterest-perl/$WebService::Pinterest::VERSION" };
 
 # Context
 
-has last_ua_response => ( is => 'rw', );
+has 'last_ua_response';
 
 sub last_ua_request {
     my $res = shift()->last_ua_response;
