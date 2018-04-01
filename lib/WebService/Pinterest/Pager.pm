@@ -1,43 +1,50 @@
 
 package WebService::Pinterest::Pager;
 
-use Moose;
+use Jojo::Base -base;
 
-has api => (
-    is       => 'ro',
-    isa      => 'WebService::Pinterest',
-    required => 1,
-);
+use zim 'Carp' => 'croak';
 
-has call => (
-    is       => 'ro',
-    isa      => 'ArrayRef',
-    required => 1,
-);
+use Safe::Isa '$_isa';    # XXX
 
-has total => (
-    traits  => ['Counter'],
-    is      => 'ro',
-    isa     => 'Int',
-    default => 0,
-    handles => {
-        inc_total => 'inc',
-    },
-);
+sub api { $_[0]{api} }
+
+sub call { $_[0]{call} }
+
+sub total { $_[0]{total} }
 
 # Internal state
 
-has active => ( is => 'rw', default => 1 );
+has 'active' => 1;
 
-has next_request => ( is => 'rw', );
+has 'next_request';
 
-sub BUILD {
-    my $self = shift;
+sub new {
+    my $self = shift->SUPER::new(@_);
+
+    croak qq{Attribute (api) is required}
+      unless exists $self->{api};
+    croak qq{Attribute (api) is invalid: value $self->{api} (not isa WebService::Pinterest)}
+      unless $self->{api}->$_isa('WebService::Pinterest');
+
+    croak qq{Attribute (call) is required}
+      unless exists $self->{call};
+    croak qq{Attribute (call) is invalid: value $self->{call} (not arrayref)}
+      unless ref $self->{call} eq 'ARRAY';
+
+    $self->{total} //= 0;
+
+    croak qq{Attribute (total) is invalid: value $self->{total} (not int)}
+      unless !ref $self->{total} && $self->{total} =~ /\A[0-9]+\z/;
 
     # First request
     my $req = $self->api->_build_request( @{ $self->call } );    # throws
     $self->next_request($req);
+
+    return $self;
 }
+
+sub inc_total { ++$_[0]->{total} }
 
 sub next {
     my $self = shift;
