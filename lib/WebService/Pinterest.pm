@@ -10,9 +10,8 @@ with 'WebService::Pinterest::Common';
 use WebService::Pinterest::Upload;
 use WebService::Pinterest::Pager;
 
-use HTTP::Request         ();
-use HTTP::Request::Common ();
-use LWP::UserAgent        ();
+use Mojo::UserAgent ();
+use Mojo::URL       ();
 
 use zim 'Carp'     => 'croak';
 use zim 'JSON::XS' => 'decode_json';
@@ -31,56 +30,63 @@ sub has_access_token { exists $_[0]{access_token} }    # Predicate
 
 has 'trace_calls';
 
-has 'api_host' => 'api.pinterest.com';                 # ro
+sub api_host { $_[0]{api_host} //= 'api.pinterest.com' }
 
-has 'api_scheme' => 'https';                           # ro
+sub api_scheme { $_[0]{api_scheme} //= 'https' }
 
 # Engine / Implementation mechanism
 
-has 'ua' => sub { LWP::UserAgent->new( agent => shift->ua_string ) };
+has 'ua' => sub {
+    my $self = shift;
+    Mojo::UserAgent->new->tap( sub { $_->transactor->name( $self->ua_string ) }
+    );
+};
 
 has 'ua_string' =>
   sub { "WebService-Pinterest-perl/$WebService::Pinterest::VERSION" };
 
 # Context
 
-has 'last_ua_response';
+has 'last_ua_tx';
 
-sub last_ua_request {
-    my $res = shift()->last_ua_response;
-    $res && $res->request;
+sub last_ua_response {
+    my $tx = shift()->last_ua_tx;
+    $tx && $tx->res;
 }
 
-# $req = $self->_build_request($method, $endpoint, %params);
-# $req = $self->_build_request($method, $endpoint, \%params);
-# $req = $self->_build_request($method, $endpoint, \%params, \%opts);
-sub _build_request {
+sub last_ua_request {
+    my $tx = shift()->last_ua_tx;
+    $tx && $tx->req;
+}
+
+# $tx = $self->_build_tx($method, $endpoint, %params);
+# $tx = $self->_build_tx($method, $endpoint, \%params);
+# $tx = $self->_build_tx($method, $endpoint, \%params, \%opts);
+sub _build_tx {
     my $self = shift;
 
     my ( $method, $path, $query, $form_data ) = $self->validate_call(@_);
 
-    my $uri = URI->new;
+    my $uri = Mojo::URL->new;
     $uri->scheme( $self->api_scheme );
     $uri->host( $self->api_host );
     $uri->path($path);
-    $uri->query_form($query);
+    $uri->query($query);
 
     if ($form_data) {
-        return HTTP::Request::Common::POST(
-            $uri,
-            'Content-Type' => 'multipart/form-data',
-            'Content'      => $form_data
-        );
+        my $headers = { 'Content-Type' => 'multipart/form-data' };
+        return $self->ua->build_tx(
+            $method => $uri => $headers => form => $form_data );
     }
     else {
-        return HTTP::Request->new( $method => $uri );
+        return $self->ua->build_tx( $method => $uri );
     }
 }
 
-# $req = $api->_build_next_request($url);
+# $tx = $api->_build_next_tx($url);
 sub _build_next_request {
     my ( $self, $url ) = @_;
-    return HTTP::Request->new( GET => $url );
+    return $self->ua->build_tx( GET => $url );
 }
 
 # $upload = $api->upload($file);
@@ -90,41 +96,55 @@ sub upload {
     return WebService::Pinterest::Upload->new( args => [@_] );
 }
 
-# $res = $api->call( $method => $endpoint, %params );
-# $res = $api->call( $method => $endpoint, \%params );
-# $res = $api->call( $method => $endpoint, \%params, \%opts );
+# $tx = $api->call( $method => $endpoint, %params );
+# $tx = $api->call( $method => $endpoint, \%params );
+# $tx = $api->call( $method => $endpoint, \%params, \%opts );
 sub call {
     my $self = shift;
-    my $req  = $self->_build_request(@_);
-    return $self->_call($req);
+    my $tx   = $self->_build_tx(@_);
+    return $self->_call($tx);
+}
+
+sub _dump {
+    my ( $msg, %args ) = @_;
+    my $prefix = $args{prefix} // '';
+    my $str = shift->to_string;
+    $str =~ s/^/$prefix/gms;
+    print STDERR $str, "\n";
 }
 
 sub _call {
-    my ( $self, $req ) = @_;
+    my $self = shift;
 
     # TODO catch exception, convert to error response
 
-    my $ua  = $self->ua;
-    my $res = $ua->request($req);
-    $self->last_ua_response($res);
+    my $tx = $self->ua->start(@_);
+    $self->last_ua_tx($tx);
+
+    my $res = $tx->res;
 
     if ( $self->trace_calls ) {
-        $req->dump( prefix => '< ', maxlength => 0 );
-        $res->dump( prefix => '> ', maxlength => 0 );
+        my $req = $tx->req;
+        _dump( $req, prefix => '< ' );
+        _dump( $res, prefix => '> ' );
     }
 
     # Decode JSON content
     my $r;
-    if ( $res && $res->content_type eq 'application/json' ) {
-        my $json = $res->decoded_content;
-        $r = eval { decode_json($json) };
-        if ( my $err = $@ ) {
-            $r = { _error => 'bad_json', _message => $err, json => $json };
+    if ( $res && $res->headers->content_type eq 'application/json' ) {
+        $r = $res->json;
+        unless ( defined $r ) {
+            $r = {
+                _error   => 'bad_json',
+                _message => 'Failed to decode body as JSON',
+                json     => $res->body
+            };
         }
     }
-    $r //= { _error => 'not_json', _content_type => $res->content_type };
-    $r->{_http_status} = $res->status_line;
-    $r->{_status}      = _status_group( $res->code );
+    $r //=
+      { _error => 'not_json', _content_type => $res->headers->content_type };
+    $r->{_http_status} = sprintf '%s %s', $res->code, $res->message;
+    $r->{_status} = _status_group( $res->code );
 
     return $r;
 }
@@ -165,14 +185,14 @@ sub authorization_url {
         croak "Attribute app_id must be set";    # FIXME throw
     }
 
-    my $req = $self->_build_request(
+    my $tx = $self->_build_tx(
         GET => '/oauth',
         {
             client_id => $self->app_id,
             @_,
         },
     );
-    return $req->uri->as_string;
+    return $tx->req->uri->to_string;
 }
 
 #    $res = $api->get_access_token(

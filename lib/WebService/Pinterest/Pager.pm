@@ -17,14 +17,15 @@ sub total { $_[0]{total} }
 
 has 'active' => 1;
 
-has 'next_request';
+has 'next_tx';
 
 sub new {
     my $self = shift->SUPER::new(@_);
 
     croak qq{Attribute (api) is required}
       unless exists $self->{api};
-    croak qq{Attribute (api) is invalid: value $self->{api} (not isa WebService::Pinterest)}
+    croak
+qq{Attribute (api) is invalid: value $self->{api} (not isa WebService::Pinterest)}
       unless $self->{api}->$_isa('WebService::Pinterest');
 
     croak qq{Attribute (call) is required}
@@ -38,8 +39,8 @@ sub new {
       unless !ref $self->{total} && $self->{total} =~ /\A[0-9]+\z/;
 
     # First request
-    my $req = $self->api->_build_request( @{ $self->call } );    # throws
-    $self->next_request($req);
+    my $tx = $self->api->_build_tx( @{ $self->call } );    # throws
+    $self->next_tx($tx);
 
     return $self;
 }
@@ -51,25 +52,25 @@ sub next {
 
     return undef unless $self->active;
 
-    my $req = $self->next_request;
-    return !1 unless defined $req;
+    my $tx = $self->next_tx;
+    return !1 unless defined $tx;
 
     $self->inc_total;
-    my $res = $self->api->_call($req);
+    my $res = $self->api->_call($tx);
 
     if ( exists $res->{page} ) {
         if ( defined $res->{page}{next} ) {
             my $next_url = $res->{page}{next};
-            my $next_req = self->api->_build_next_request($next_url);
-            $self->next_request($next_req);
+            my $next_tx  = self->api->_build_next_tx($next_url);
+            $self->next_tx($next_tx);
         }
         elsif ( exists $res->{data} && scalar @{ $res->{data} } == 0 )
         {    # It is over
-            $self->next_request(undef);
+            $self->next_tx(undef);
             return !1;
         }
         else {    # That was the last page
-            $self->next_request(undef);
+            $self->next_tx(undef);
         }
         return $res;
 
