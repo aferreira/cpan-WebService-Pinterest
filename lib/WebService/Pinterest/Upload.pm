@@ -32,5 +32,10 @@ sub lwp_file_spec {
     shift()->args;
 }
 
+sub mojo_file_spec {
+    my $args = shift->args;
+    return { file => $args->[0], $args->[1] ? ( filename => $args->[1] ) : () };
+}
+
 1;
 

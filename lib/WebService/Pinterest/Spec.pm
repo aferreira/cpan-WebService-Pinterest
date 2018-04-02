@@ -9,6 +9,7 @@ use zim 'Data::Validate::URI' => qw(is_web_uri is_https_uri);
 use zim 'List::MoreUtils'     => qw(all none);
 
 use Regexp::Common qw(list balanced);    # XXX
+use Safe::Isa qw($_isa);                 # XXX
 
 use WebService::Pinterest::X;
 
@@ -627,12 +628,12 @@ sub validate_endpoint_params {
     my @more;
     if (
         my @uploads =
-        map { $_ => ( delete $checked->{$_} )->lwp_file_spec } grep {
-            UNIVERSAL::isa( $checked->{$_}, 'WebService::Pinterest::Upload' )
-        } keys %$checked
+        map { $_ => ( delete $checked->{$_} )->mojo_file_spec }
+        grep { $checked->{$_}->$_isa('WebService::Pinterest::Upload') }
+        keys %$checked
       )
     {
-        @more = \@uploads;
+        @more = {@uploads};
     }
 
     return ( $path, $checked, @more );
