@@ -1,13 +1,22 @@
 
 package WebService::Pinterest::Upload;
 
-use Moose;
+use Jojo::Base -base;
 
-has args => (
-    is       => 'ro',
-    required => 1,
-    isa      => 'ArrayRef',
-);
+use zim 'Carp' => 'croak';
+
+sub args { $_[0]{args} }
+
+sub new {
+    my $self = shift->SUPER::new(@_);
+
+    croak qq{Attribute (args) is required}
+      unless exists $self->{args};
+    croak qq{Attribute (args) is invalid: value $self->{args} (not arrayref)}
+      unless ref $self->{args} eq 'ARRAY';
+
+    return $self;
+}
 
 sub file {
     shift->args->[0];
@@ -21,6 +30,11 @@ sub is_valid {
 
 sub lwp_file_spec {
     shift()->args;
+}
+
+sub mojo_file_spec {
+    my $args = shift->args;
+    return { file => $args->[0], $args->[1] ? ( filename => $args->[1] ) : () };
 }
 
 1;
